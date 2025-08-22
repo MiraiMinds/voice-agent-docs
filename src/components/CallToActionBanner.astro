@@ -1,0 +1,172 @@
+---
+// CallToActionBanner.astro - Reusable banner component with title, subtitle, and scheduling button
+export interface Props {
+  title: string;
+  subtitle?: string;
+  buttonText?: string;
+  calendarUrl?: string;
+  buttonColor?: string;
+}
+
+const { 
+  title, 
+  subtitle, 
+  buttonText = "Schedule a Demo",
+  calendarUrl = "https://calendar.google.com/calendar/appointments/schedules/AcZssZ0xP6nxXZ5RWb6zQrYcADLF1-g6p-fyyMm5rdE6z6SHqNQPBPEJzoVdY--CLtVXGHy8H80RTyHV?gv=true",
+  buttonColor = "#039BE5"
+} = Astro.props;
+
+// Generate unique ID for this banner instance
+const bannerId = `cta-banner-${Math.random().toString(36).substr(2, 9)}`;
+---
+
+<div class="cta-banner">
+  <div class="cta-content">
+    <div class="cta-text">
+      <h2 class="cta-title">{title}</h2>
+      {subtitle && <p class="cta-subtitle">{subtitle}</p>}
+    </div>
+    <div class="cta-button-container">
+      <div id={bannerId}></div>
+    </div>
+  </div>
+</div>
+
+<!-- Google Calendar Scheduling Scripts -->
+<link href="https://calendar.google.com/calendar/scheduling-button-script.css" rel="stylesheet" />
+<script src="https://calendar.google.com/calendar/scheduling-button-script.js" async></script>
+
+<script define:vars={{ bannerId, calendarUrl, buttonColor, buttonText }}>
+  (function() {
+    function initCalendarButton() {
+      const target = document.getElementById(bannerId);
+      if (target && window.calendar && window.calendar.schedulingButton) {
+        window.calendar.schedulingButton.load({
+          url: calendarUrl,
+          color: buttonColor,
+          label: buttonText,
+          target: target,
+        });
+      } else {
+        // Retry after a short delay if calendar script isn't loaded yet
+        setTimeout(initCalendarButton, 100);
+      }
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initCalendarButton);
+    } else {
+      initCalendarButton();
+    }
+  })();
+</script>
+<style>
+    .cta-banner {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 1rem;
+        padding: 3rem 2rem;
+        margin: 3rem 0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .cta-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .cta-text {
+        flex: 1;
+    }
+
+    .cta-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #000000;
+        margin: 0 0 0.75rem 0;
+        line-height: 1.2;
+    }
+
+    .cta-subtitle {
+        font-size: 1.125rem;
+        color: #000000;
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    .cta-button-container {
+        flex-shrink: 0;
+    }
+
+    /* Override default calendar button styles */
+    .cta-button-container :global(.calendar-scheduling-button) {
+        font-size: 1.125rem !important;
+        padding: 1rem 2.5rem !important;
+        border-radius: 9999px !important;
+        font-weight: 600 !important;
+        transition: all 0.2s ease !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+        color: #000000 !important;
+    }
+
+    .cta-button-container :global(.calendar-scheduling-button:hover) {
+        transform: translateY(-1px) !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .cta-banner {
+            padding: 2rem 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .cta-content {
+            flex-direction: column;
+            text-align: center;
+            gap: 1.5rem;
+        }
+
+        .cta-title {
+            font-size: 1.75rem;
+        }
+
+        .cta-subtitle {
+            font-size: 1rem;
+        }
+
+        .cta-button-container :global(.calendar-scheduling-button) {
+            width: 100% !important;
+            padding: 1rem 2.5rem !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .cta-banner {
+            padding: 1.5rem 1rem;
+        }
+
+        .cta-title {
+            font-size: 1.5rem;
+        }
+    }
+
+    /* Dark mode support */
+    :global([data-theme="dark"]) .cta-banner {
+        background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+        border-color: #374151;
+    }
+
+    :global([data-theme="dark"]) .cta-title {
+        color: #f9fafb;
+    }
+
+    :global([data-theme="dark"]) .cta-subtitle {
+        color: #d1d5db;
+    }
+</style>
