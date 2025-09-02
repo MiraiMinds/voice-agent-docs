@@ -1,8 +1,5 @@
 ---
-title: HealthCare
-description: Voice Agents has deep integration with shopify
+title: Frequently Asked Question 
+description: Answers to all your question
 ---
 
-## Overview
-
-> work in progress
