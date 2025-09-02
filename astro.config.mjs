@@ -5,6 +5,7 @@ import starlightThemeNova from "starlight-theme-nova";
 
 // https://astro.build/config
 export default defineConfig({
+  site: "https://docs.miraiminds.co",
   markdown: {
     shikiConfig: {
       themes: {
