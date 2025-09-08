@@ -6,18 +6,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a documentation site for Voice Agents built with Astro and Starlight. It's a static site generator focused on creating clean, accessible documentation for voice agent integrations, use cases, and guides.
 
-## Development Commands
-
-All commands use pnpm as the package manager:
-
-- `pnpm install` - Install dependencies
-- `pnpm dev` or `pnpm start` - Start local dev server at localhost:4321
-- `pnpm build` - Build production site to ./dist/
-- `pnpm preview` - Preview build locally
-- `pnpm astro ...` - Run Astro CLI commands
-
-Node.js version requirement: >=18.20.8
-
 ## Architecture & Structure
 
 ### Core Technology Stack

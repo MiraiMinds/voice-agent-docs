@@ -2,6 +2,7 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 import starlightThemeNova from "starlight-theme-nova";
+import mermaid from 'astro-mermaid';
 
 // https://astro.build/config
 export default defineConfig({
@@ -15,6 +16,7 @@ export default defineConfig({
     },
   },
   integrations: [
+    mermaid(),
     starlight({
       title: "Voice Agents",
       social: [
@@ -35,9 +37,15 @@ export default defineConfig({
         {
           label: "Getting Started",
           items: [
-            { label: "Overview", slug: "guides/overview" },
-            { label: "Campaign", slug: "guides/campaign" },
+            { label: "Overview", slug: "general/overview" },
+            { label: "Campaign", slug: "general/campaign" },
           ],
+        },
+        {
+          label: "Guides",
+          items: [
+            { label: "Abandon Cart Recovery", slug: "guide/abandon-cart-recovery" },
+          ]
         },
         {
           label: "Integration",
@@ -53,12 +61,12 @@ export default defineConfig({
           items: [
             { label: "Retail", slug: "usecases/retail" },
             { label: "B2B", slug: "usecases/b2b" },
-            { label: "Healthcare", slug: "usecases/healthcare" },
+            // { label: "Healthcare", slug: "usecases/healthcare" },
           ],
         },
         {
           label: "FAQ",
-          items: [{ label: "Frequently asked Questions", slug: "guides/faq" }],
+          items: [{ label: "Frequently asked Questions", slug: "general/faq" }],
         },
       ],
     }),
