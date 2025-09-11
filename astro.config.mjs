@@ -52,6 +52,7 @@ export default defineConfig({
           items: [
             { label: "Shopify", slug: "integration/shopify" },
             { label: "Whatsapp", slug: "integration/whatsapp" },
+            { label: "Lime Chat", slug: "integration/limechat" },
             { label: "Klaviyo", slug: "integration/klaviyo" },
             { label: "Google Calendar", slug: "integration/google-calendar" },
           ],
