@@ -28,9 +28,11 @@ export default defineConfig({
       ],
       plugins: [
         starlightThemeNova({
-          // nav: [
-          // 	{ label: 'Demo', href: 'https://voice.miraiminds.co' },
-          // ],
+          nav: [
+            { label: 'Docs', href: '/general/overview' },
+            { label: 'Developers', href: '/developers/introduction' },
+            { label: 'Schedule a Demo', href: 'https://calendar.google.com/calendar/appointments/schedules/AcZssZ0xP6nxXZ5RWb6zQrYcADLF1-g6p-fyyMm5rdE6z6SHqNQPBPEJzoVdY--CLtVXGHy8H80RTyHV?gv=true' },
+          ],
         }),
       ],
       sidebar: [
@@ -39,6 +41,14 @@ export default defineConfig({
           items: [
             { label: "Overview", slug: "general/overview" },
             { label: "Campaign", slug: "general/campaign" },
+          ],
+        },
+        {
+          label: "Developers",
+          items: [
+            { label: "Introduction", slug: "developers/introduction" },
+            { label: "Create Assistant", slug: "developers/create-assistant" },
+            { label: "Make a Call", slug: "developers/make-a-call" },
           ],
         },
         {
