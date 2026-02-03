@@ -1,8 +1,8 @@
 // @ts-check
-import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+import mermaid from "astro-mermaid";
+import { defineConfig } from "astro/config";
 import starlightThemeNova from "starlight-theme-nova";
-import mermaid from 'astro-mermaid';
 
 // https://astro.build/config
 export default defineConfig({
@@ -29,9 +29,12 @@ export default defineConfig({
       plugins: [
         starlightThemeNova({
           nav: [
-            { label: 'Docs', href: '/general/overview' },
-            { label: 'Developers', href: '/developers/introduction' },
-            { label: 'Schedule a Demo', href: 'https://calendar.google.com/calendar/appointments/schedules/AcZssZ0xP6nxXZ5RWb6zQrYcADLF1-g6p-fyyMm5rdE6z6SHqNQPBPEJzoVdY--CLtVXGHy8H80RTyHV?gv=true' },
+            { label: "Docs", href: "/general/overview" },
+            { label: "Developers", href: "/developers/introduction" },
+            {
+              label: "Schedule a Demo",
+              href: "https://calendar.google.com/calendar/appointments/schedules/AcZssZ0xP6nxXZ5RWb6zQrYcADLF1-g6p-fyyMm5rdE6z6SHqNQPBPEJzoVdY--CLtVXGHy8H80RTyHV?gv=true",
+            },
           ],
         }),
       ],
@@ -49,13 +52,12 @@ export default defineConfig({
             { label: "Introduction", slug: "developers/introduction" },
             { label: "Create Assistant", slug: "developers/create-assistant" },
             { label: "Make a Call", slug: "developers/make-a-call" },
+            { label: "Webhook Signature", slug: "developers/webhook-signature" },
           ],
         },
         {
           label: "Guides",
-          items: [
-            { label: "Abandon Cart Recovery", slug: "guide/abandon-cart-recovery" },
-          ]
+          items: [{ label: "Abandon Cart Recovery", slug: "guide/abandon-cart-recovery" }],
         },
         {
           label: "Integration",
