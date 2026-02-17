@@ -52,6 +52,7 @@ export default defineConfig({
             { label: "Introduction", slug: "developers/introduction" },
             { label: "Create Assistant", slug: "developers/create-assistant" },
             { label: "Make a Call", slug: "developers/make-a-call" },
+            { label: "Call Lifecycle", slug: "developers/call-lifecycle-events" },
             { label: "Webhook Signature", slug: "developers/webhook-signature" },
           ],
         },
