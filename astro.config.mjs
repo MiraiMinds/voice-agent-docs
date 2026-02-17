@@ -58,7 +58,10 @@ export default defineConfig({
         },
         {
           label: "Guides",
-          items: [{ label: "Abandon Cart Recovery", slug: "guide/abandon-cart-recovery" }],
+          items: [
+            { label: "Abandon Cart Recovery", slug: "guide/abandon-cart-recovery" },
+            { label: "How Discounts Work", slug: "guide/how-discounts-work" },
+          ],
         },
         {
           label: "Integration",
