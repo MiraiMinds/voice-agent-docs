@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mirai Voice — AI voice agents for Indian phone calls</title>
+<meta name="description" content="Mirai Voice places real outbound phone calls across India — Hindi, Hinglish, English — with sub-second voice-to-voice latency on our own GPUs. One REST API: create an agent, place a call, receive webhooks. ₹1/min, prepaid.">
+<meta name="theme-color" content="#08080a" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#fbfbf9" media="(prefers-color-scheme: light)">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="Mirai Voice — AI voice agents for Indian phone calls">
+<meta property="og:description" content="Real outbound calls across India. Hindi and Hinglish, sub-second voice-to-voice, one REST API. ₹1/min.">
+<meta property="og:type" content="website">
+<link rel="preload" href="assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/jetbrains-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/styles.css">
+<script>
+  // Set theme before first paint — no flash. The `js` class gates every
+  // hide-then-reveal rule, so the page is fully readable without scripts.
+  document.documentElement.classList.add('js');
+  try {
+    var t = localStorage.getItem('mv-theme');
+    document.documentElement.dataset.theme =
+      t || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  } catch (e) {}
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="nav" id="nav">
+  <div class="nav__inner">
+    <a class="brand" href="/" aria-label="Mirai Voice, home">
+      <svg class="brand__mark" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" focusable="false">
+        <rect x="1"  y="6"   width="2.4" height="6"  rx="1.2"/>
+        <rect x="5.3" y="2.5" width="2.4" height="13" rx="1.2" class="brand__bar--accent"/>
+        <rect x="9.6" y="4.5" width="2.4" height="9"  rx="1.2"/>
+        <rect x="13.9" y="7"  width="2.4" height="4"  rx="1.2"/>
+      </svg>
+      <span class="brand__word">Mirai&nbsp;Voice</span>
+    </a>
+
+    <nav class="nav__links" aria-label="Primary">
+      <a href="#api">API</a>
+      <a href="#pricing">Pricing</a>
+      <a href="/docs">Docs</a>
+    </nav>
+
+    <div class="nav__actions">
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to light theme">
+        <svg class="theme-toggle__icon theme-toggle__icon--moon" width="15" height="15" viewBox="0 0 15 15" aria-hidden="true"><path d="M12.3 9.4A5.2 5.2 0 0 1 5.6 2.7a5.4 5.4 0 1 0 6.7 6.7Z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+        <svg class="theme-toggle__icon theme-toggle__icon--sun" width="15" height="15" viewBox="0 0 15 15" aria-hidden="true"><circle cx="7.5" cy="7.5" r="3.1" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M7.5.9v1.8M7.5 12.3v1.8M14.1 7.5h-1.8M2.7 7.5H.9M12.2 2.8l-1.3 1.3M4.1 10.9l-1.3 1.3M12.2 12.2l-1.3-1.3M4.1 4.1 2.8 2.8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      </button>
+      <a class="btn btn--primary btn--sm" href="mailto:sneh.mehta@miraiminds.co?subject=Mirai%20Voice%20—%20API%20access">Get API access</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ── Hero ─────────────────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="hero__bloom" aria-hidden="true"></div>
+    <div class="wrap hero__grid">
+
+      <div class="hero__copy">
+        <p class="eyebrow-pill lift" style="--lift-i:0">
+          <span class="live-dot" aria-hidden="true"></span>
+          Live · ₹1/min transactional tier
+        </p>
+
+        <h1 class="display lift" style="--lift-i:1">
+          Voice agents that call your customers in Hindi.
+        </h1>
+
+        <p class="lede lift" style="--lift-i:2">
+          Mirai Voice places real outbound phone calls across India — Hindi, Hinglish, English —
+          with sub-second voice-to-voice latency on GPUs we run ourselves.
+          One REST API: create an agent, place a call, receive webhooks.
+        </p>
+
+        <div class="hero__cta lift" style="--lift-i:3">
+          <a class="btn btn--primary" href="mailto:sneh.mehta@miraiminds.co?subject=Mirai%20Voice%20—%20API%20access">Get API access</a>
+          <a class="btn btn--ghost" href="/docs">
+            Read the docs
+            <svg width="13" height="13" viewBox="0 0 13 13" aria-hidden="true" class="btn__arrow"><path d="M3.2 9.8 9.8 3.2M4.6 3.2h5.2v5.2" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+
+        <p class="hero__note lift" style="--lift-i:4">
+          Prepaid, per-minute billing. Keys are issued by hand today — mail us and we'll set you up the same day.
+        </p>
+      </div>
+
+      <!-- Live-call panel -->
+      <div class="callcard lift" style="--lift-i:5" id="callcard">
+        <div class="callcard__head">
+          <div class="callcard__id">
+            <span class="live-dot live-dot--rec" aria-hidden="true"></span>
+            <span class="callcard__num">+91 98••• ••821</span>
+          </div>
+          <div class="callcard__meta">
+            <span class="chip chip--quiet" id="call-status">in progress</span>
+            <span class="mono callcard__timer" id="call-timer">00:24</span>
+          </div>
+        </div>
+
+        <canvas class="callcard__wave" id="wave" height="96" aria-hidden="true"></canvas>
+
+        <div class="callcard__legend" aria-hidden="true">
+          <span><i class="swatch swatch--agent"></i>agent</span>
+          <span><i class="swatch swatch--caller"></i>caller</span>
+          <span class="callcard__latency">
+            <span class="mono" id="latency-value">612</span><span class="mono callcard__latency-unit">ms voice-to-voice</span>
+          </span>
+        </div>
+
+        <!-- Real markup so the card still reads a call with scripts blocked;
+             app.js clears it and drives the live version. -->
+        <ol class="transcript" id="transcript" aria-label="Sample call transcript">
+          <li class="line line--agent" data-in="true" data-stale="true">
+            <span class="line__who">agent</span>
+            <span class="line__text" lang="hi">कोई बात नहीं — नया पता बता दीजिए, मैं अभी अपडेट कर देती हूँ।</span>
+          </li>
+          <li class="line line--caller" data-in="true" data-stale="true">
+            <span class="line__who">caller</span>
+            <span class="line__text" lang="hi">फ़्लैट 402, ग्रीन पार्क।</span>
+          </li>
+          <li class="line line--agent" data-in="true">
+            <span class="line__who">agent</span>
+            <span class="line__text" lang="hi">नोट कर लिया, धन्यवाद! आपका दिन शुभ हो।</span>
+          </li>
+        </ol>
+
+        <div class="callcard__foot">
+          <span class="mono">agt_01JQ8ZP4M2</span>
+          <span class="mono">₹1/min · t1</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── Proof strip ──────────────────────────────────────────────────── -->
+  <section class="stats" aria-label="Measured performance">
+    <div class="wrap stats__grid">
+      <div class="stat reveal">
+        <span class="stat__value mono" data-count="824">824</span>
+        <span class="stat__label">calls per hour, on two GPUs</span>
+      </div>
+      <div class="stat reveal">
+        <span class="stat__value mono" data-count="0">0</span>
+        <span class="stat__label">failures in that run</span>
+      </div>
+      <div class="stat reveal">
+        <span class="stat__value mono">&lt;1s</span>
+        <span class="stat__label">voice-to-voice, from India</span>
+      </div>
+      <div class="stat reveal">
+        <span class="stat__value">Airtel</span>
+        <span class="stat__label">real PSTN, not a sandbox</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── API ──────────────────────────────────────────────────────────── -->
+  <section class="section" id="api">
+    <div class="wrap api__grid">
+      <header class="section__head api__head">
+        <p class="eyebrow reveal">The API</p>
+        <h2 class="h2 reveal">Three requests to a live call.</h2>
+        <p class="section__sub reveal">
+          v2 is a small REST surface. One bearer key, JSON in, JSON out, signed webhooks back.
+          Nothing to install, nothing to host.
+        </p>
+
+        <dl class="api__meta reveal">
+          <div class="api__row">
+            <dt>Base URL</dt>
+            <dd class="mono">api.voice.miraiminds.co</dd>
+          </div>
+          <div class="api__row">
+            <dt>Auth</dt>
+            <dd class="mono">Authorization: Bearer sk_live_…</dd>
+          </div>
+          <div class="api__row">
+            <dt>Resources</dt>
+            <dd class="mono">/v2/agents · /v2/calls · /v2/wallet</dd>
+          </div>
+          <div class="api__row">
+            <dt>Events</dt>
+            <dd class="mono">call.started · call.completed · call.failed · call.voicemail</dd>
+          </div>
+        </dl>
+      </header>
+
+      <div class="code reveal">
+        <div class="code__tabs" role="tablist" aria-label="API examples">
+          <button class="code__tab is-active" role="tab" id="tab-0" aria-controls="panel-0" aria-selected="true" data-verb="POST" data-path="/v2/agents">Create an agent</button>
+          <button class="code__tab" role="tab" id="tab-1" aria-controls="panel-1" aria-selected="false" tabindex="-1" data-verb="POST" data-path="/v2/calls">Place a call</button>
+          <button class="code__tab" role="tab" id="tab-2" aria-controls="panel-2" aria-selected="false" tabindex="-1" data-verb="POST" data-path="{webhook_url}">Handle the webhook</button>
+          <span class="code__tabline" id="tabline" aria-hidden="true"></span>
+        </div>
+
+        <div class="code__bar">
+          <span class="code__route mono"><b id="code-verb">POST</b> <span id="code-path">/v2/agents</span></span>
+          <button class="copy" id="copy-btn" type="button" aria-label="Copy code">
+            <span class="copy__label" data-state="idle">Copy</span>
+            <span class="copy__label" data-state="done" aria-hidden="true">Copied</span>
+          </button>
+        </div>
+
+        <div class="code__body">
+          <pre class="code__pre" role="tabpanel" id="panel-0" aria-labelledby="tab-0" tabindex="0"><code id="code-out">curl -X POST https://api.voice.miraiminds.co/v2/agents \
+  -H "Authorization: Bearer $MIRAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "order-confirmation", "language": "hi-IN", ... }'</code><span class="caret" id="caret" aria-hidden="true"></span></pre>
+          <div class="code__panels" hidden aria-hidden="true">
+            <script type="text/plain" data-snippet="0">curl -X POST https://api.voice.miraiminds.co/v2/agents \
+  -H "Authorization: Bearer $MIRAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "order-confirmation",
+    "language": "hi-IN",
+    "voice": { "voice_id": "mira_hi_f1", "language": "hi-IN" },
+    "first_message": "नमस्ते, मैं मिराई से बोल रही हूँ।",
+    "system_prompt": "Confirm the delivery address for order {{order_id}}.",
+    "voicemail": { "action": "hangup" },
+    "max_duration_secs": 180
+  }'
+
+# 201 Created
+# { "id": "agt_01JQ8ZP4M2", "name": "order-confirmation" }</script>
+            <script type="text/plain" data-snippet="1">curl -X POST https://api.voice.miraiminds.co/v2/calls \
+  -H "Authorization: Bearer $MIRAI_API_KEY" \
+  -H "Idempotency-Key: order-8241-confirm" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agent_id": "agt_01JQ8ZP4M2",
+    "to": "+919800000821",
+    "variables": { "order_id": "8241", "name": "Rohit" },
+    "webhook_url": "https://shop.example.in/hooks/mirai"
+  }'
+
+# 202 Accepted
+# { "id": "call_01JQ8ZQ7T9", "status": "queued" }</script>
+            <script type="text/plain" data-snippet="2">POST /hooks/mirai
+X-Mirai-Signature: t=1769385600,v1=9f2b8c…
+# v1 = hmac-sha256(whsec, t + "." + raw_body) · 5-minute replay window
+
+{
+  "id": "evt_01JQ8ZR2K4",
+  "type": "call.completed",
+  "created_at": "2026-07-26T09:14:22Z",
+  "data": {
+    "call": {
+      "id": "call_01JQ8ZQ7T9",
+      "status": "completed",
+      "ended_reason": "agent_ended_call",
+      "duration_secs": 42,
+      "cost": { "amount_inr": 1, "per_min_inr": 1 }
+    }
+  }
+}
+
+# Retries: 1s · 10s · 60s · 5m · 30m, then the dead-letter queue.</script>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Features ─────────────────────────────────────────────────────── -->
+  <section class="section section--tight" id="platform">
+    <div class="wrap">
+      <header class="section__head">
+        <p class="eyebrow reveal">What you get</p>
+        <h2 class="h2 reveal">The unglamorous parts, already solved.</h2>
+      </header>
+
+      <div class="grid grid--3">
+        <article class="card reveal">
+          <h3 class="card__title">Hindi that isn't translated</h3>
+          <p class="card__body">Hindi and Hinglish are the default, not a locale flag. Indian names, addresses and digit strings come out the way a person would say them.</p>
+        </article>
+        <article class="card reveal">
+          <h3 class="card__title">Sub-second turn-taking</h3>
+          <p class="card__body">Speech recognition, the model and the voice all run on our own GPUs inside India. No trans-Pacific hop between the caller and the reply.</p>
+        </article>
+        <article class="card reveal">
+          <h3 class="card__title">Voicemail, handled</h3>
+          <p class="card__body">The agent recognises an answering machine and does what you told it to: hang up quietly, or leave the message you wrote.</p>
+        </article>
+        <article class="card reveal">
+          <h3 class="card__title">Calls that end cleanly</h3>
+          <p class="card__body">Agents know when a conversation is finished and hang up — instead of trailing off into silence while the meter runs.</p>
+        </article>
+        <article class="card reveal">
+          <h3 class="card__title">Signed, retried webhooks</h3>
+          <p class="card__body">HMAC-SHA256 with a timestamp and a five-minute replay window. Retries at 1s, 10s, 60s, 5m and 30m before anything is dropped.</p>
+        </article>
+        <article class="card reveal">
+          <h3 class="card__title">Prepaid wallet, over the API</h3>
+          <p class="card__body">Balance and ledger are just endpoints. A call that would overdraw the wallet returns <span class="mono mono--inline">402</span> before the phone ever rings.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Use cases ────────────────────────────────────────────────────── -->
+  <section class="section section--tight" id="usecases">
+    <div class="wrap">
+      <header class="section__head">
+        <p class="eyebrow reveal">For D2C teams</p>
+        <h2 class="h2 reveal">The three calls you keep paying humans to make.</h2>
+      </header>
+
+      <div class="grid grid--3 usecases">
+        <article class="card card--use reveal">
+          <h3 class="card__title">Order confirmation</h3>
+          <p class="card__body">Confirm the address and the order before it ships, and write the answer straight back into your system.</p>
+          <p class="sample" lang="hi">“नमस्ते, आपका ऑर्डर कल शाम तक पहुँच जाएगा — क्या पता वही है?”</p>
+        </article>
+        <article class="card card--use reveal">
+          <h3 class="card__title">Delivery reminders</h3>
+          <p class="card__body">Call ahead of the rider, catch the failed deliveries before they happen, reschedule on the call.</p>
+          <p class="sample" lang="hi">“डिलीवरी आज 6 बजे के आसपास है, आप घर पर होंगे?”</p>
+        </article>
+        <article class="card card--use reveal">
+          <h3 class="card__title">Service reminders</h3>
+          <p class="card__body">Renewals, refills and service dates — the calls nobody in the team wants to make twice a month.</p>
+          <p class="sample" lang="hi">“आपकी सर्विस अगले हफ़्ते ड्यू है, स्लॉट बुक कर दूँ?”</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Pricing ──────────────────────────────────────────────────────── -->
+  <section class="section" id="pricing">
+    <div class="wrap">
+      <header class="section__head">
+        <p class="eyebrow reveal">Pricing</p>
+        <h2 class="h2 reveal">Per minute. Prepaid. No seats.</h2>
+        <p class="section__sub reveal">Billed in per-minute blocks, rounded up, from a prepaid wallet. Balance and transactions are available over the API.</p>
+      </header>
+
+      <div class="grid grid--3 tiers">
+        <article class="tier tier--live reveal">
+          <div class="tier__head">
+            <span class="chip chip--live"><span class="live-dot" aria-hidden="true"></span>Live now</span>
+            <h3 class="tier__name">Transactional</h3>
+          </div>
+          <p class="tier__price"><span class="tier__amt">₹1</span><span class="tier__per">/min</span></p>
+          <ul class="tier__list">
+            <li>Outbound calls — Hindi, Hinglish, English</li>
+            <li>Voicemail detection with your fallback</li>
+            <li>Clean call endings</li>
+            <li>Signed webhooks + idempotent dialing</li>
+            <li>Prepaid wallet and ledger</li>
+          </ul>
+          <a class="btn btn--primary btn--full" href="mailto:sneh.mehta@miraiminds.co?subject=Mirai%20Voice%20—%20API%20access%20(₹1%20tier)">Get API access</a>
+        </article>
+
+        <article class="tier reveal">
+          <div class="tier__head">
+            <span class="chip chip--soon">Coming soon</span>
+            <h3 class="tier__name">Conversational</h3>
+          </div>
+          <p class="tier__price"><span class="tier__amt">₹3</span><span class="tier__per">/min</span></p>
+          <ul class="tier__list">
+            <li>Everything in ₹1/min</li>
+            <li>Call analytics</li>
+            <li>Human handoff</li>
+            <li>Lower-latency voice path</li>
+          </ul>
+          <button class="btn btn--quiet btn--full" type="button" disabled>Coming soon</button>
+        </article>
+
+        <article class="tier reveal">
+          <div class="tier__head">
+            <span class="chip chip--soon">Coming soon</span>
+            <h3 class="tier__name">Flows</h3>
+          </div>
+          <p class="tier__price"><span class="tier__amt">₹5</span><span class="tier__per">/min</span></p>
+          <ul class="tier__list">
+            <li>Everything in ₹3/min</li>
+            <li>Conversation flows you author yourself</li>
+          </ul>
+          <button class="btn btn--quiet btn--full" type="button" disabled>Coming soon</button>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Closing CTA ──────────────────────────────────────────────────── -->
+  <section class="closer">
+    <div class="wrap closer__inner reveal">
+      <h2 class="h2 closer__title">There is no signup page yet.<br>That's deliberate.</h2>
+      <p class="closer__sub">Tell us what you want to call people about. We'll mint a key, wire your webhook, and put a real call through the same day.</p>
+      <div class="hero__cta closer__cta">
+        <a class="btn btn--primary" href="mailto:sneh.mehta@miraiminds.co?subject=Mirai%20Voice%20—%20API%20access">Get API access</a>
+        <a class="btn btn--ghost" href="/docs">Read the docs
+          <svg width="13" height="13" viewBox="0 0 13 13" aria-hidden="true" class="btn__arrow"><path d="M3.2 9.8 9.8 3.2M4.6 3.2h5.2v5.2" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer__inner">
+    <div class="footer__brand">
+      <svg class="brand__mark" width="16" height="16" viewBox="0 0 18 18" aria-hidden="true">
+        <rect x="1"  y="6"   width="2.4" height="6"  rx="1.2"/>
+        <rect x="5.3" y="2.5" width="2.4" height="13" rx="1.2" class="brand__bar--accent"/>
+        <rect x="9.6" y="4.5" width="2.4" height="9"  rx="1.2"/>
+        <rect x="13.9" y="7"  width="2.4" height="4"  rx="1.2"/>
+      </svg>
+      <span>Mirai Voice — built by <span class="footer__strong">Mirai Minds</span>, in India.</span>
+    </div>
+    <nav class="footer__links" aria-label="Footer">
+      <a href="/docs">Docs</a>
+      <a href="#api">API</a>
+      <a href="#pricing">Pricing</a>
+      <a href="mailto:sneh.mehta@miraiminds.co">Email</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="assets/app.js" defer></script>
+</body>
+</html>
