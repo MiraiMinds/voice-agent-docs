@@ -30,7 +30,8 @@ export default defineConfig({
         starlightThemeNova({
           nav: [
             { label: "Docs", href: "/general/overview" },
-            { label: "Developers", href: "/developers/introduction" },
+            { label: "API", href: "/v2/" },
+            { label: "Pricing", href: "/general/tiers" },
             {
               label: "Schedule a Demo",
               href: "https://calendar.google.com/calendar/appointments/schedules/AcZssZ0xP6nxXZ5RWb6zQrYcADLF1-g6p-fyyMm5rdE6z6SHqNQPBPEJzoVdY--CLtVXGHy8H80RTyHV?gv=true",
@@ -43,11 +44,43 @@ export default defineConfig({
           label: "Getting Started",
           items: [
             { label: "Overview", slug: "general/overview" },
+            { label: "Billing & Tiers", slug: "general/tiers" },
             { label: "Campaign", slug: "general/campaign" },
           ],
         },
         {
-          label: "Developers",
+          label: "API v2",
+          badge: { text: "New", variant: "success" },
+          items: [
+            { label: "Overview", slug: "v2" },
+            { label: "Quickstart", slug: "v2/quickstart" },
+            { label: "Agents", slug: "v2/agents" },
+            { label: "Calls", slug: "v2/calls" },
+            { label: "Wallet", slug: "v2/wallet" },
+            { label: "Webhooks", slug: "v2/webhooks" },
+            { label: "Errors", slug: "v2/errors" },
+            { label: "Limits & Compliance", slug: "v2/limits" },
+            { label: "Migrating from v1", slug: "v2/migration" },
+            { label: "FAQ", slug: "v2/faq" },
+          ],
+        },
+        {
+          label: "API v1 (stable)",
+          collapsed: true,
+          items: [
+            { label: "Overview", slug: "v1" },
+            { label: "Workspaces", slug: "v1/workspaces" },
+            { label: "Assistants", slug: "v1/assistants" },
+            { label: "Calls", slug: "v1/calls" },
+            { label: "Webhooks", slug: "v1/webhooks" },
+            { label: "Telephony", slug: "v1/telephony" },
+            { label: "API Tools", slug: "v1/tools" },
+            { label: "Knowledge Base", slug: "v1/knowledge-base" },
+          ],
+        },
+        {
+          label: "Guides (legacy)",
+          collapsed: true,
           items: [
             { label: "Introduction", slug: "developers/introduction" },
             { label: "Create Assistant", slug: "developers/create-assistant" },

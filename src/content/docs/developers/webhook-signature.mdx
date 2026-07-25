@@ -3,6 +3,13 @@ title: Webhook Signature Verification
 description: Learn how to verify webhook signatures to ensure authenticity and integrity.
 ---
 
+:::note[This is the v1 scheme]
+`x-signature` + `x-public-key` is how **[v1](/v1/webhooks/#signature-verification)**
+signs. **[v2](/v2/webhooks/#signature-verification)** uses
+`X-Mirai-Signature: t=…,v1=…` with a 5-minute replay window — they are not
+interchangeable. If you receive both, use two separate routes.
+:::
+
 ## Overview
 
 All webhook events emitted by the Voice Agents Backend are cryptographically signed using HMAC-SHA256. The signature is calculated from the payload data, allowing consumers to verify the data's authenticity and integrity.

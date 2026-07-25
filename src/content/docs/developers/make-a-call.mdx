@@ -9,6 +9,19 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
+:::danger[Out of date — do not copy the snippets below]
+The endpoint and headers on this page no longer match the shipped API. The
+current call endpoints are:
+
+- **v2 (recommended):** [`POST /v2/calls`](/v2/calls/#create-a-call) on
+  `api.voice.miraiminds.co` with `Authorization: Bearer sk_live_…`
+- **v1 (stable):** [`POST /v2/call/initiate`](/v1/calls/#initiate-a-call) on
+  `api.voice-agents.miraiminds.co` with `x-public-key` / `x-private-key` /
+  `workspace`
+
+This page is kept only for the sequence diagram below, which is still accurate.
+:::
+
 The `Make a Call` endpoint allows you to programmatically trigger an outbound call to any phone number using a specific voice assistant. This is useful for automated notifications, appointment reminders, or immediate lead qualification.
 
 ## Endpoint
