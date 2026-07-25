@@ -3,6 +3,11 @@ title: Voice Agent Overview
 description: Understand what voice agents are, how they work, and how they can transform your customer interactions.
 ---
 
+:::tip[Building an integration?]
+Go straight to the **[5-minute quickstart](/v2/quickstart/)**, or see what a
+minute costs on the **[Billing & tiers](/general/tiers/)** page.
+:::
+
 Voice agents are AI-powered conversational systems that automate voice interactions at scale. They combine advanced natural language processing, speech recognition, and intelligent call flow management to handle customer communications without human intervention.
 
 Unlike traditional phone systems or chatbots, voice agents can:

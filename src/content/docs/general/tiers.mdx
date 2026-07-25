@@ -1,0 +1,229 @@
+---
+title: Billing & tiers
+description: What a minute costs, how minutes are rounded, what each tier can do, and what happens at zero balance.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+One number to remember: **₹1 per minute**, rounded up, minimum one minute.
+That is the `t1` transactional tier, and it is the only tier live today.
+
+| Tier | Rate | Status |
+| :--- | :--- | :--- |
+| `t1` — transactional | **₹1 / minute** | ✅ Live |
+| `t3` — conversational | ₹3 / minute | 🔜 Coming soon |
+| `t5` — orchestrated | ₹5 / minute | 🔜 Coming soon |
+
+`t3` and `t5` are published so you can plan against them. Requesting one today
+returns `501 tier_unavailable` — see [when they arrive](#coming-soon).
+
+## Feature matrix
+
+What the tier buys is not a discount, it is **what the call can do**.
+
+| Capability | `t1` ₹1 | `t3` ₹3 | `t5` ₹5 |
+| :--- | :--: | :--: | :--: |
+| Core call (ASR → LLM → TTS, Mira stack) | ✅ | ✅ | ✅ |
+| Voicemail detection | ✅ basic | ✅ proper | ✅ |
+| Clean call ending | ✅ | ✅ | ✅ |
+| Post-call analytics | ❌ | ✅ | ✅ |
+| Premium TTS voice option + fallback | ❌ | ✅ | ✅ |
+| Node-graph runtime | ❌ | ✅ (our graph) | ✅ (your graph) |
+| Human handoff (SIP transfer) | ❌ | ✅ | ✅ |
+| IVR detect + navigate | ❌ | ✅ | ✅ |
+| Customer-authored node graph | ❌ | ❌ | ✅ |
+| Priority capacity | best-effort | floor | floor |
+
+**Read it as a contract.** A ❌ is not "degraded", it is "absent". On `t1`,
+post-call analytics does not run at all — there is no analysis object in the
+webhook and no summary to fetch later. That is what makes ₹1 possible.
+
+### Picking a tier
+
+- **`t1`** — one job, under two minutes, no branching. Order confirmations,
+  delivery windows, appointment reminders, OTP-adjacent notifications, "are you
+  still interested?". If you can write the whole call as one prompt and it ends
+  when the customer says yes or no, this is your tier.
+- **`t3`** — the call has structure (stages, rails, a handoff to a human) or you
+  need to know afterwards what happened, at scale, without listening.
+- **`t5`** — you want to author the flow yourself, node by node, and version it
+  like code.
+
+## What a minute costs
+
+Billing is **per-minute blocks, rounded up, minimum one minute.** Not per
+second.
+
+| Call duration | Billed minutes | `t1` cost |
+| :--- | :--- | :--- |
+| 8 seconds | 1 | ₹1 |
+| 59 seconds | 1 | ₹1 |
+| 61 seconds | 2 | ₹2 |
+| 96 seconds | 2 | ₹2 |
+| 3 min 01 s | 4 | ₹4 |
+
+### Rounding
+
+`duration_secs` on the [call object](/v2/calls/#the-call-object) is the true
+media duration in seconds. The charge is
+`ceil(duration_secs / 60) × per_min_inr`, with a floor of one minute for any
+call that produced media.
+
+```python
+import math
+
+def cost_inr(duration_secs: int, per_min_inr: float) -> float:
+    if duration_secs <= 0:
+        return 0.0
+    return math.ceil(duration_secs / 60) * per_min_inr
+```
+
+You never have to compute this — `cost.amount_inr` on the call object and the
+debit row in the [ledger](/v2/wallet/#list-transactions) are authoritative. Use
+the formula to forecast, not to reconcile.
+
+### What is and is not billable
+
+| Outcome | `status` | Billed |
+| :--- | :--- | :---: |
+| Conversation completed | `completed` | ✅ |
+| Answering machine, message left or hung up on | `voicemail` | ✅ |
+| Hit the duration cap | `timeout` | ✅ |
+| Rang out | `no_answer` | ❌ |
+| Line busy | `busy` | ❌ |
+| Could not connect, or our pipeline errored | `failed` | ❌ |
+| You cancelled before it connected | `aborted` | ❌ |
+
+The rule underneath: **if media went live, you pay for it.** A voicemail
+consumed a real dial, real TTS and real minutes of carrier time, so it is
+billed. A call our own pipeline broke is not.
+
+### Forecasting a month
+
+Take your answer rate and your mean answered-call duration:
+
+```text
+monthly ₹ = dials × answer_rate × ceil(mean_answered_secs / 60) × rate
+```
+
+A campaign of 50,000 dials at a 35% answer rate and 80 seconds mean talk time,
+on `t1`:
+
+```text
+50,000 × 0.35 = 17,500 answered
+ceil(80 / 60)  = 2 billed minutes each
+17,500 × 2 × ₹1 = ₹35,000
+```
+
+Unanswered dials cost nothing, so the 32,500 that rang out are free. The number
+that moves your bill is **mean answered duration crossing a minute boundary** —
+shaving a call from 61 to 58 seconds halves its cost. Prompts that cap reply
+length pay for themselves.
+
+## Wallet
+
+Billing is prepaid against one INR wallet per workspace.
+
+```bash
+curl https://api.voice.miraiminds.co/v2/wallet \
+  -H "Authorization: Bearer sk_live_YOUR_API_KEY"
+```
+
+```json
+{ "balance_inr": 500, "currency": "INR", "updated_at": "2026-07-26T09:12:44Z" }
+```
+
+- **Debits happen at call end**, one ledger row per billable call, carrying the
+  `call_id`.
+- **Top-ups are ops-issued** during the pilot. Email
+  [sneh@miraiminds.co](mailto:sneh@miraiminds.co); credit lands within minutes
+  and applies immediately.
+- **The ledger is the source of truth** for reconciliation:
+  [`GET /v2/wallet/transactions`](/v2/wallet/#list-transactions).
+
+See the [Wallet reference](/v2/wallet/) for the full API.
+
+## At zero balance
+
+**Before dialling**, we check the wallet can cover at least one minute at the
+call's tier. If it cannot:
+
+```json title="402 Payment Required"
+{
+  "error": {
+    "code": "insufficient_balance",
+    "message": "wallet balance 0.40 INR is below the minimum for one minute at t1"
+  }
+}
+```
+
+- No phone rings. No charge. No call object is created.
+- The `Idempotency-Key` is **not** consumed — retry with the same key after
+  topping up.
+- **Calls already in flight are not killed.** A call that started with credit
+  runs to its natural end and then debits. Your balance can therefore dip below
+  what the pre-dial check implied during a busy minute.
+
+Alert on balance yourself, hourly, at a threshold covering a day of traffic. A
+`402` mid-campaign is an expensive way to find out.
+
+<Tabs syncKey="lang">
+  <TabItem label="Python" icon="seti:python">
+    ```python
+    wallet = httpx.get(f"{API}/v2/wallet", headers=auth).raise_for_status().json()
+    if wallet["balance_inr"] < DAILY_BURN_INR:
+        alert_ops(f"mirai wallet at ₹{wallet['balance_inr']}")
+    ```
+  </TabItem>
+  <TabItem label="Node.js" icon="seti:javascript">
+    ```javascript
+    const wallet = await fetch(`${API}/v2/wallet`, { headers: auth }).then((r) => r.json());
+    if (wallet.balance_inr < DAILY_BURN_INR) {
+      await alertOps(`mirai wallet at ₹${wallet.balance_inr}`);
+    }
+    ```
+  </TabItem>
+</Tabs>
+
+## Setting the tier
+
+Your key carries a default tier. Every call inherits it unless you override:
+
+```json
+{
+  "agent_id": "agt_01JZQ8F3K7M2N5P9R4T6V8W0XZ",
+  "to": "+919876543210",
+  "tier": "t1"
+}
+```
+
+The rate applied is reported back on the call object as `cost.per_min_inr`, so
+you can always see which rate card a given call was billed under.
+
+## Coming soon
+
+`t3` and `t5` are in the contract but not in production. Today:
+
+```json title="501 Not Implemented"
+{
+  "error": {
+    "code": "tier_unavailable",
+    "message": "tier t3 is not available yet; use t1"
+  }
+}
+```
+
+Design against them if you like — the field name and the values will not change
+— but do not ship a code path that depends on them until we tell you they are
+live. Ask your account contact for current timelines.
+
+## For existing v1 customers
+
+Nothing about your integration changes.
+
+- Your default tier is **`t1`**, which is the behaviour you already have.
+- v1 keeps its existing credit model and endpoints. The v2 wallet is the same
+  money, exposed through a different API.
+- Opting up, when `t3` exists, is one field on the call.
+
+See [Migrating from v1](/v2/migration/) if you want the new surface.
