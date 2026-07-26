@@ -12,11 +12,11 @@ Two kinds of limit apply to you: ours (technical, we enforce them) and India's
 
 Limits are per **secret key**.
 
-| Limit | Pilot default | Applies to |
-| :--- | :--- | :--- |
-| Request rate | 10 requests/second, burst 20 | all `/v2/*` endpoints |
-| Concurrent live calls | 5 | calls in `dialing` or `in_progress` |
-| Queue depth | 500 | calls in `queued` |
+| Limit | Pilot default | Applies to | Over the limit |
+| :--- | :--- | :--- | :--- |
+| Request rate | 10 requests/second, burst 20 | all `/v2/*` endpoints | `429 rate_limited` |
+| Concurrent live calls | 5 | calls in `dialing` or `in_progress` | the call **queues** |
+| Queue depth | 500 | calls in `queued` | ask ops before you exceed it |
 
 :::caution[Pilot keys are provisioned individually]
 The numbers above are the defaults a new pilot key is issued with. Yours may
@@ -24,22 +24,39 @@ differ — confirm your actual ceilings with your account contact before you siz
 a campaign. Higher concurrency is a provisioning change, not a code change: ask.
 :::
 
-Exceeding a limit returns `429` with `error.code: rate_limited` and a
-`Retry-After` header in seconds.
+### Request rate
+
+Exceeding the **request rate** returns `429` with `error.code: rate_limited` and
+a `Retry-After` header in seconds. It is about how fast you call the API, not
+about how many phones are ringing.
 
 ```json title="429 Too Many Requests"
 {
   "error": {
     "code": "rate_limited",
-    "message": "concurrent call limit of 5 reached for this workspace"
+    "message": "rate limit exceeded, retry in 0.4s"
   }
 }
 ```
 
-Concurrency is a **ceiling, not a queue with priority**. When you are at the
-ceiling, new `POST /v2/calls` requests are rejected rather than delayed
-indefinitely — so your dialler, not ours, controls pacing. The simplest correct
-pattern:
+### Concurrency
+
+Concurrency does **not** produce a `429`. A `POST /v2/calls` beyond your
+concurrent-call ceiling is still accepted with `202` and sits in `queued` until a
+slot frees, then dials — nothing is rejected and nothing is lost. `429` is
+request-rate only.
+
+That makes the ceiling a **pacer**, not a gate. Two consequences:
+
+- A queued call's phone rings later than you asked. If a call is only useful
+  inside a window, check `status` before you assume it went out — or do not
+  submit it until you have the capacity.
+- Submitting 500 calls at once does not fail; it builds a queue that drains at
+  your concurrency. Queue depth is a provisioned ceiling too — talk to ops
+  before you plan a burst that large.
+
+Keeping the queue short is still the better shape, because a queue you own is
+one you can reorder, cancel and re-prioritise. The simplest correct pattern:
 
 ```python
 # keep N calls in flight; refill as terminal webhooks arrive
@@ -169,7 +186,8 @@ the same retention and access controls as the rest of your customer data.
 | :--- | :--- |
 | E.164 destination format | ✅ `400 invalid_request` |
 | Wallet balance before dialling | ✅ `402 insufficient_balance` |
-| Concurrency and request rate | ✅ `429 rate_limited` |
+| Request rate | ✅ `429 rate_limited` |
+| Concurrency ceiling | ✅ over-cap calls wait in `queued` |
 | Maximum call duration | ✅ `status: timeout` |
 | Calling window | ❌ your scheduler |
 | DND / opt-out scrubbing | ❌ your list |

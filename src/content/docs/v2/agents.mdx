@@ -61,7 +61,14 @@ Server-set and read-only: `id`, `object`, `created_at`, `updated_at`.
 | Field | Type | Description |
 | :--- | :--- | :--- |
 | `voice_id` | string | A voice slug from the catalogue, e.g. `priya`, `neha`, `sagar`. |
-| `language` | string | Rendering language for that voice. Omit to inherit the agent's `language`. |
+| `language` | string | Rendering language for that voice. Omit to inherit the agent's `language`. **Accepted and stored, not yet honoured** — see below. |
+
+:::note[`voice.language` is recorded, not yet applied]
+The field is validated, stored and echoed back, and it travels with the call
+payload — but the voice today renders in the agent's top-level `language`. Set
+both to the same value and you get what you expect; set them differently and the
+top-level one wins until per-voice rendering ships.
+:::
 
 The catalogue is shared with v1 — list it with
 [`GET /v1/admin/voice-gallery`](/v1/assistants/#voice-gallery), which returns a
@@ -74,9 +81,17 @@ hangs up.
 
 | Field | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `enabled` | boolean | `true` | Set `false` to remove the tool entirely — the call then ends only on the callee hanging up or `max_duration_secs`. |
-| `message` | string | `"Thanks, have a good day"` | Spoken farewell. |
-| `confirm` | boolean | `true` | Require a second `end_call` within the confirmation window before hanging up. Guards against fast models ending on a bare "ok". |
+| `enabled` | boolean | `true` | Set `false` to remove the tool entirely — the call then ends only on the callee hanging up or `max_duration_secs`. **Accepted and stored; enforcement rolling out.** |
+| `message` | string | `"Thanks, have a good day"` | Spoken farewell. Live today. |
+| `confirm` | boolean | `true` | Require a second `end_call` within the confirmation window before hanging up. Guards against fast models ending on a bare "ok". **Accepted and stored; enforcement rolling out.** |
+
+:::caution[Only `message` is enforced today]
+`enabled` and `confirm` are validated, stored, echoed back and carried into the
+call payload, but the agent currently reads only `end_call.message`. Until the
+worker picks the other two up, assume the tool is available and confirmation
+behaves at its default. Set them now — they take effect without any change on
+your side.
+:::
 
 :::tip
 Leave `confirm: true` unless you are running a one-turn notification. It costs
@@ -220,8 +235,11 @@ GET /v2/agents/{id}
   </TabItem>
 </Tabs>
 
-**`200 OK`** — the agent object. **`404 not_found`** if the ID does not exist in
-your workspace or the agent was deleted.
+**`200 OK`** — the agent object. **`404 not_found`** if the agent was deleted, if
+the ID does not exist, or if it exists in another workspace — all three answer
+identically, so a `404` is never a hint that the ID is real. Never `403`: that
+status means your key has been revoked and nothing else. See
+[errors](/v2/errors/#error-codes).
 
 ---
 
@@ -243,14 +261,30 @@ curl "https://api.voice.miraiminds.co/v2/agents?limit=20" \
       "id": "agt_01JZQ8F3K7M2N5P9R4T6V8W0XZ",
       "object": "agent",
       "name": "Order Confirmation",
+      "system_prompt": "You are Priya from Acme. Confirm order {{order_id}} with {{customer_name}}…",
+      "first_message": "नमस्ते {{customer_name}}, मैं Acme से Priya बोल रही हूँ।",
+      "voice": { "voice_id": "priya", "language": "hi-IN" },
       "language": "hi-IN",
-      "created_at": "2026-07-26T09:14:02Z"
+      "max_duration_secs": 300,
+      "end_call": {
+        "enabled": true,
+        "message": "धन्यवाद, आपका दिन शुभ हो।",
+        "confirm": true
+      },
+      "voicemail": { "action": "hangup" },
+      "created_at": "2026-07-26T09:14:02Z",
+      "updated_at": "2026-07-26T09:14:02Z"
     }
   ],
   "has_more": false,
   "next_cursor": null
 }
 ```
+
+Each element is the **full** [agent object](#the-agent-object) — the same shape
+`GET /v2/agents/{id}` returns, prompts included. There is no trimmed summary
+form, so listing a page of agents with long prompts is a large response: page
+with `limit` rather than pulling everything at once.
 
 Deleted agents are excluded. See [pagination](/v2/#pagination).
 

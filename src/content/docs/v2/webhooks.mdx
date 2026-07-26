@@ -59,7 +59,7 @@ Ignore what you do not recognise.
 | `call.completed` | The call connected and finished normally. | `completed` |
 | `call.voicemail` | An answering machine answered. | `voicemail` |
 | `call.failed` | The call did not connect, or the pipeline errored. | `no_answer`, `busy`, `failed`, `timeout` |
-| `call.aborted` | You cancelled it before it connected. | `aborted` |
+| `call.aborted` | You cancelled it with [`POST /abort`](/v2/calls/#abort-a-call) — queued, ringing or mid-conversation. | `aborted` |
 
 Exactly one terminal event fires per call: `call.completed`, `call.voicemail`,
 `call.failed` or `call.aborted`.
@@ -122,7 +122,7 @@ retry-tomorrow, `failed` is a page-someone.
       "agent_id": "agt_01JZQ8F3K7M2N5P9R4T6V8W0XZ",
       "to": "+919876543212",
       "status": "voicemail",
-      "ended_reason": "assistant-ended-call",
+      "ended_reason": "voicemail",
       "started_at": "2026-07-26T09:18:02Z",
       "ended_at": "2026-07-26T09:18:20Z",
       "duration_secs": 18,
@@ -131,6 +131,10 @@ retry-tomorrow, `failed` is a page-someone.
   }
 }
 ```
+
+`status: voicemail` always carries `ended_reason: "voicemail"` — that reason is
+what identifies the answering machine in the first place, so the pair is the
+only combination you will see.
 
 Voicemail calls **are billed** — media was live. 18 seconds rounds up to one
 minute. See [rounding](/general/tiers/#rounding).
@@ -149,7 +153,7 @@ minute. See [rounding](/general/tiers/#rounding).
       "agent_id": "agt_01JZQ8F3K7M2N5P9R4T6V8W0XZ",
       "to": "+919876543213",
       "status": "aborted",
-      "ended_reason": null,
+      "ended_reason": "aborted-by-api",
       "started_at": null,
       "ended_at": "2026-07-26T09:14:51Z",
       "duration_secs": 0,
@@ -158,6 +162,10 @@ minute. See [rounding](/general/tiers/#rounding).
   }
 }
 ```
+
+`aborted-by-api` is the only `ended_reason` an abort produces, whether you
+cancelled the call in the queue, mid-ring or mid-conversation. Aborted calls are
+never billed.
 
 ---
 
@@ -438,16 +446,14 @@ def verify_any(raw_body, header, secrets):
 ## Retries
 
 A delivery succeeds on any `2xx`. Anything else — `4xx`, `5xx`, timeout, TLS
-error, DNS failure — is retried on a fixed schedule:
+error, DNS failure — is retried: **six attempts with exponential backoff over
+roughly 36 minutes**, the first fired immediately and the gaps widening up to a
+half-hour cap.
 
-| Attempt | Delay after previous |
-| :--- | :--- |
-| 1 | immediate |
-| 2 | 1 second |
-| 3 | 10 seconds |
-| 4 | 60 seconds |
-| 5 | 5 minutes |
-| 6 | 30 minutes |
+Design against the window, not against the individual gaps — the exact delays
+are an implementation detail and we tune them. What is contractual is that a
+brief outage on your side is survivable without losing the event, and that an
+endpoint down for the whole 36 minutes will lose it.
 
 After the sixth attempt the event goes to a dead-letter queue. Ops can replay
 from the DLQ — a replayed event is byte-identical to the original, including its

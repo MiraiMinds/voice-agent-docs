@@ -35,7 +35,8 @@ Because the phone has not rung yet. `202` means queued. The outcome arrives by
 
 **How long until the phone rings?**
 Normally a couple of seconds from `202`. If you are at your concurrency ceiling
-the call sits in `queued` until a slot frees.
+the call sits in `queued` until a slot frees — it is queued, not rejected, so
+being over the ceiling never returns `429`.
 
 **Can I do inbound calls?**
 Not in v2. Inbound assistants live in [v1](/v1/).
@@ -58,8 +59,10 @@ access. If your use case requires that we do not record, tell us up front.
 for you — retry from your own dialler if you want to.
 
 **How do I stop a call I just started?**
-[`POST /v2/calls/{id}/abort`](/v2/calls/#abort-a-call), but only before it
-connects. Once media is live it cannot be cancelled through the API.
+[`POST /v2/calls/{id}/abort`](/v2/calls/#abort-a-call). It works while the call is
+queued, while it is ringing, and while it is live — a live call is hung up
+mid-conversation. Only a call that has already ended returns `409`. Aborted calls
+are never billed.
 
 **Which languages work?**
 Hindi and Indian English are what the stack is tuned for, including
@@ -108,8 +111,8 @@ See [raw body](/v2/webhooks/#raw-body). Second most common: the signed string is
 `"<t>.<raw_body>"` — the timestamp and the dot are part of it, not just the body.
 
 **Do you retry failed deliveries?**
-Yes: 1s, 10s, 60s, 5m, 30m, then dead-letter. Any `2xx` stops it. See
-[retries](/v2/webhooks/#retries).
+Yes — six attempts with exponential backoff over roughly 36 minutes, then
+dead-letter. Any `2xx` stops it. See [retries](/v2/webhooks/#retries).
 
 **Can events arrive out of order or twice?**
 Yes to both. Dedupe on `event.id` and order your state machine by

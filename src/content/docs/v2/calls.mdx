@@ -56,7 +56,7 @@ Base URL `https://api.voice.miraiminds.co`.
 | `busy` | ✅ | Callee's line was busy. Free. |
 | `failed` | ✅ | Could not connect, or the pipeline errored. Free. |
 | `timeout` | ✅ | Hit `max_duration_secs`. **Billable.** |
-| `aborted` | ✅ | You cancelled it before it connected. Free. |
+| `aborted` | ✅ | You cancelled it with [`POST /abort`](#abort-a-call) — from the queue, mid-ring, or mid-conversation. Free either way. |
 
 Statuses only move forward. A terminal status never changes.
 
@@ -65,6 +65,8 @@ stateDiagram-v2
     [*] --> queued: POST /v2/calls
     queued --> dialing: capacity acquired
     queued --> aborted: POST /abort
+    dialing --> aborted: POST /abort
+    in_progress --> aborted: POST /abort
     dialing --> in_progress: media live
     dialing --> no_answer
     dialing --> busy
@@ -95,6 +97,8 @@ for control flow; use `ended_reason` for analytics and support.
 | `exceeded-max-duration` | `timeout` | Hit `max_duration_secs`. |
 | `customer-did-not-answer` | `no_answer` | Rang out. |
 | `customer-busy` | `busy` | Line busy. |
+| `voicemail` | `voicemail` | An answering machine answered. Detecting it is what sets the status, so the two always travel together. |
+| `aborted-by-api` | `aborted` | You called [`POST /abort`](#abort-a-call). The only reason an abort produces. |
 | `assistant-error` | `failed` | Pipeline failure on our side. Not billed. |
 
 :::note
@@ -203,9 +207,9 @@ The full call object is available from [`GET /v2/calls/{id}`](#get-a-call).
 | `400` | `invalid_request` | Missing `agent_id`/`to`, `to` not E.164, `max_duration_secs` out of range |
 | `401` | `unauthorized` | Bad or missing key |
 | `402` | `insufficient_balance` | Wallet cannot cover the first minute at your tier. **Checked before we dial** — no partial charge. See [Wallet](/v2/wallet/#402-insufficient-balance). |
-| `404` | `not_found` | `agent_id` does not exist in your workspace |
-| `409` | `duplicate_call` | A call with this idempotency anchor is already running |
-| `429` | `rate_limited` | Request rate or concurrency ceiling hit. See [Limits](/v2/limits/). |
+| `404` | `not_found` | `agent_id` does not exist in your workspace — including one that exists in someone else's |
+| `409` | `duplicate_call` | A request with this `Idempotency-Key` is still being processed. See [idempotency](#idempotency). |
+| `429` | `rate_limited` | Request rate exceeded. Concurrency does **not** 429 — over-cap calls queue. See [Limits](/v2/limits/). |
 | `501` | `tier_unavailable` | `tier` is `t3` or `t5`, which are not live yet |
 
 ### Variables
@@ -241,6 +245,13 @@ was placed, and without the key a retry means the customer's phone rings twice.
 
 The key is scoped to your workspace. Reusing a key with a *different* body still
 replays the original response — pick keys that are unique per intended call.
+
+There is one window where a reused key does not replay: while the **first**
+request with that key is still being processed, there is no stored response to
+replay yet, so the second request gets
+[`409 duplicate_call`](/v2/errors/#error-codes). It means "already in flight, no
+second call placed" — retry a moment later and you will get the original
+response, or wait for the webhook.
 
 ---
 
@@ -296,7 +307,8 @@ GET /v2/calls/{id}
 </Tabs>
 
 **`200 OK`** — the [call object](#the-call-object). **`404 not_found`** for an
-unknown ID.
+unknown ID, and for an ID that belongs to another workspace — the two are
+deliberately indistinguishable.
 
 :::tip
 Poll no faster than every 5 seconds, and only when you cannot receive webhooks.
@@ -311,7 +323,10 @@ Polling counts against your [rate limit](/v2/limits/); webhooks do not.
 POST /v2/calls/{id}/abort
 ```
 
-Cancels a call that has not yet connected.
+Cancels a call that has not ended yet. Accepted while the call is `queued`,
+`dialing` **or `in_progress`** — a live call is hung up on the SIP server
+mid-conversation, not merely flagged. Only a call that has already reached a
+terminal status is refused: there is nothing left to stop.
 
 ```bash
 curl -X POST https://api.voice.miraiminds.co/v2/calls/call_01JZQ9B4M8N3P6R2S5T7V9W1YA/abort \
@@ -322,14 +337,15 @@ curl -X POST https://api.voice.miraiminds.co/v2/calls/call_01JZQ9B4M8N3P6R2S5T7V
 { "id": "call_01JZQ9B4M8N3P6R2S5T7V9W1YA", "status": "aborted" }
 ```
 
-`202` means the cancel was signalled. The call reaches `aborted` shortly after,
-and a [`call.aborted`](/v2/webhooks/#callaborted) event fires. An aborted call is
-never billed.
+`202` means the cancel was signalled. The call reaches `aborted` shortly after
+with `ended_reason: "aborted-by-api"`, and a
+[`call.aborted`](/v2/webhooks/#callaborted) event fires. An aborted call is never
+billed — including one aborted after media went live.
 
 | Status | `error.code` | Cause |
 | :--- | :--- | :--- |
-| `404` | `not_found` | Unknown call ID |
-| `409` | `conflict` | The call is already terminal, or already `in_progress` — media that is live cannot be aborted through the API |
+| `404` | `not_found` | Unknown call ID, or a call in another workspace |
+| `409` | `conflict` | The call has already ended — its status is terminal, so there is nothing to abort |
 
 ---
 
