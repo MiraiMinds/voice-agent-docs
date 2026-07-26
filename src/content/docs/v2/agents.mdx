@@ -46,7 +46,7 @@ Base URL `https://api.voice.miraiminds.co`. All endpoints require
 | `first_message` | string | yes | Spoken the moment the callee answers, before the model runs. Keep it short — it is your first-audio latency. |
 | `voice` | object | yes | See [Voice](#voice). |
 | `language` | string | yes | BCP-47 conversation language, e.g. `hi-IN`, `en-IN`. Drives ASR and the model's default output language. |
-| `max_duration_secs` | integer | no | Hard cap. The call is ended with `ended_reason: exceeded-max-duration`. Default `300`, maximum `1800`. |
+| `max_duration_secs` | integer | no | Hard cap. The call is ended with `ended_reason: exceeded-max-duration`. Minimum `30`, maximum `1800`, default `300`. |
 | `end_call` | object | no | See [Ending a call](#ending-a-call). |
 | `voicemail` | object | no | See [Voicemail](#voicemail). |
 
@@ -72,7 +72,8 @@ top-level one wins until per-voice rendering ships.
 
 The catalogue is shared with v1 — list it with
 [`GET /v1/admin/voice-gallery`](/v1/assistants/#voice-gallery), which returns a
-slug and a sample audio URL per voice.
+slug and a sample audio URL per voice. See [Voices](/v2/voices/) for the full
+discovery flow.
 
 ### Ending a call
 

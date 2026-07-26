@@ -103,10 +103,13 @@ for control flow; use `ended_reason` for analytics and support.
 | `no-media` | `failed` | The call was placed but audio never flowed. See the note below. Not billed. |
 | `aborted-by-api` | `aborted` | You called [`POST /abort`](#abort-a-call). The only reason an abort produces. |
 | `assistant-error` | `failed` | Pipeline failure on our side. Not billed. |
+| `transferred` | `completed` | Reserved for a completed human handoff on `t3`/`t5`. **Not wired — no call emits this yet.** See [Node graphs](/v2/node-graphs/). |
+| `balance-exhausted` | `completed` | Reserved for a call ended when the wallet emptied mid-call. **Not wired — no call emits this yet.** |
 
 :::note
 Treat `ended_reason` as an open vocabulary. New values are added without a
-version bump — always have a default branch.
+version bump — always have a default branch. The last two rows above are in the
+vocabulary but **no call emits them today**; they land with the `t3`/`t5` tiers.
 :::
 
 :::caution[`no_answer` is under-reported today]
