@@ -58,6 +58,12 @@ access. If your use case requires that we do not record, tell us up front.
 `status: no_answer`, a `call.failed` webhook, and no charge. v2 does not retry
 for you — retry from your own dialler if you want to.
 
+One caveat: when the carrier gives us no verdict at all, an unanswered call is
+reported as `failed` with `ended_reason: "no-media"` instead. Both are free, and
+both mean "did not connect" — so treat `no_answer`, `busy` and `failed` +
+`no-media` as one bucket in retry logic. See
+[ended reasons](/v2/calls/#ended-reasons).
+
 **How do I stop a call I just started?**
 [`POST /v2/calls/{id}/abort`](/v2/calls/#abort-a-call). It works while the call is
 queued, while it is ringing, and while it is live — a live call is hung up

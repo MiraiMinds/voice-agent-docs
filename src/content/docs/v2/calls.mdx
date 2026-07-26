@@ -98,12 +98,33 @@ for control flow; use `ended_reason` for analytics and support.
 | `customer-did-not-answer` | `no_answer` | Rang out. |
 | `customer-busy` | `busy` | Line busy. |
 | `voicemail` | `voicemail` | An answering machine answered. Detecting it is what sets the status, so the two always travel together. |
+| `silence-timed-out` | `completed` | Media was live but nobody ever spoke. Billable — the agent ran. |
+| `idle-timed-out` | `completed` | The agent re-prompted its configured number of times and the caller never came back. Billable. |
+| `no-media` | `failed` | The call was placed but audio never flowed. See the note below. Not billed. |
 | `aborted-by-api` | `aborted` | You called [`POST /abort`](#abort-a-call). The only reason an abort produces. |
 | `assistant-error` | `failed` | Pipeline failure on our side. Not billed. |
 
 :::note
 Treat `ended_reason` as an open vocabulary. New values are added without a
 version bump — always have a default branch.
+:::
+
+:::caution[`no_answer` is under-reported today]
+Some calls that genuinely rang out are reported as `failed` with
+`ended_reason: "no-media"` rather than as `no_answer`.
+
+Whether we can tell the two apart depends on what the carrier tells us. When the
+carrier returns a clear verdict (SIP 480/408 → rang out, 486/600 → busy) you get
+`no_answer` / `busy` correctly. When it black-holes the call instead — accepts
+the invite and returns nothing — we have no signal to distinguish "rang, nobody
+picked up" from "answered into silence", and the call ends `failed` /
+`no-media` after the media gate expires.
+
+**What this means for you:** if you are counting unanswered calls for retry
+logic, treat `no_answer`, `busy` **and** `failed` + `no-media` as the
+did-not-connect bucket. None of the three is billed, so your costs are unaffected
+either way. We are working on tightening this; the reported status will get more
+specific over time, never less.
 :::
 
 ---
@@ -209,7 +230,7 @@ The full call object is available from [`GET /v2/calls/{id}`](#get-a-call).
 | `402` | `insufficient_balance` | Wallet cannot cover the first minute at your tier. **Checked before we dial** — no partial charge. See [Wallet](/v2/wallet/#402-insufficient-balance). |
 | `404` | `not_found` | `agent_id` does not exist in your workspace — including one that exists in someone else's |
 | `409` | `duplicate_call` | A request with this `Idempotency-Key` is still being processed. See [idempotency](#idempotency). |
-| `429` | `rate_limited` | Request rate exceeded. Concurrency does **not** 429 — over-cap calls queue. See [Limits](/v2/limits/). |
+| `429` | `rate_limited` | Request rate exceeded, **or** your queue is full (500 calls accepted and not yet ended). Concurrency does **not** 429 — over-cap calls queue. `error.message` says which. Honour `Retry-After`. See [Limits](/v2/limits/). |
 | `501` | `tier_unavailable` | `tier` is `t3` or `t5`, which are not live yet |
 
 ### Variables

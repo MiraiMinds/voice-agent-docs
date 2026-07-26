@@ -50,7 +50,7 @@ There is no second shape to special-case.
 | `not_found` | `404` | Unknown `agt_`/`call_` ID, a soft-deleted agent, or an ID that belongs to another workspace. | Check the ID. |
 | `duplicate_call` | `409` | A request with this `Idempotency-Key` is still being processed; when the original completes, the same key replays its stored response. | Not an error if you are retrying — no second call was placed. |
 | `conflict` | `409` | The operation is illegal in the current state, e.g. aborting a call that has already ended. A `queued`, `dialing` or `in_progress` call aborts fine. | Read the call's `status` first. |
-| `rate_limited` | `429` | Request rate exceeded — more than your per-second ceiling. Being at your concurrency ceiling does **not** produce this: those calls queue. | Back off. See [Limits](/v2/limits/). |
+| `rate_limited` | `429` | Request rate exceeded, **or** your queue is full (500 calls accepted and not yet ended). Being at your *concurrency* ceiling does **not** produce this: those calls queue. `error.message` says which limit you hit. | Honour `Retry-After` and back off. See [Limits](/v2/limits/). |
 | `tier_unavailable` | `501` | `tier` was `t3` or `t5`. Those are announced but not live. | Use `t1`. See [tiers](/general/tiers/). |
 | `internal` | `500` | Our bug. Already alarming on our side. | Retry with backoff; if it persists, send us the `call_id`. |
 

@@ -16,7 +16,7 @@ Limits are per **secret key**.
 | :--- | :--- | :--- | :--- |
 | Request rate | 10 requests/second, burst 20 | all `/v2/*` endpoints | `429 rate_limited` |
 | Concurrent live calls | 5 | calls in `dialing` or `in_progress` | the call **queues** |
-| Queue depth | 500 | calls in `queued` | ask ops before you exceed it |
+| Queue depth | 500 | calls accepted and not yet ended | `429 rate_limited` |
 
 :::caution[Pilot keys are provisioned individually]
 The numbers above are the defaults a new pilot key is issued with. Yours may
@@ -51,9 +51,36 @@ That makes the ceiling a **pacer**, not a gate. Two consequences:
 - A queued call's phone rings later than you asked. If a call is only useful
   inside a window, check `status` before you assume it went out — or do not
   submit it until you have the capacity.
-- Submitting 500 calls at once does not fail; it builds a queue that drains at
-  your concurrency. Queue depth is a provisioned ceiling too — talk to ops
-  before you plan a burst that large.
+- Submitting a burst does not fail; it builds a queue that drains at your
+  concurrency.
+
+### Queue depth
+
+The queue itself **is** bounded. Once you have **500 calls accepted and not yet
+ended**, further `POST /v2/calls` return `429 rate_limited` with a `Retry-After`
+header until calls drain. The message names the ceiling, so you can tell it apart
+from a request-rate `429`:
+
+```json title="429 Too Many Requests"
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "queue depth limit reached for this workspace (500 calls accepted and not yet ended, limit 500); wait for calls to drain or ask ops to raise it"
+  }
+}
+```
+
+Both limits share the `rate_limited` code on purpose: the correct client
+behaviour is identical — honour `Retry-After` and retry. Read `error.message` if
+you want to log which one you hit.
+
+The count is calls **accepted and not yet ended** — `queued` plus the handful
+actually `dialing` or `in_progress` — not strictly `queued`. With a concurrency
+of 5 the difference is at most 5 calls.
+
+Queue depth is provisioned per workspace, like concurrency. If a campaign
+genuinely needs to submit more than 500 rows in one batch, ask ops before the
+campaign, not during it.
 
 Keeping the queue short is still the better shape, because a queue you own is
 one you can reorder, cancel and re-prioritise. The simplest correct pattern:
@@ -188,6 +215,7 @@ the same retention and access controls as the rest of your customer data.
 | Wallet balance before dialling | ✅ `402 insufficient_balance` |
 | Request rate | ✅ `429 rate_limited` |
 | Concurrency ceiling | ✅ over-cap calls wait in `queued` |
+| Queue depth | ✅ `429 rate_limited` past 500 outstanding |
 | Maximum call duration | ✅ `status: timeout` |
 | Calling window | ❌ your scheduler |
 | DND / opt-out scrubbing | ❌ your list |
