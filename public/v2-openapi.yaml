@@ -1,0 +1,1044 @@
+openapi: 3.1.0
+info:
+  title: Mirai Voice API v2
+  version: "2.0.0"
+  description: >
+    Resource-oriented REST API for placing outbound AI voice calls.
+
+
+    One auth header (`Authorization: Bearer sk_live_…`), predictable JSON
+    envelopes, server-minted IDs. This document is generated from the Go gateway
+    (mirai-conductor `cmd/api` + `internal/v2`) — the code is the source of
+    truth. Admin/ops routes (wallet credit) and the internal `/v1` surface are
+    intentionally excluded: they are not part of the public contract.
+
+
+    Money is INR. `amount_inr` and `per_min_inr` are numbers, not strings.
+    Timestamps are RFC 3339 in UTC (`2026-07-26T09:14:02Z`). Phone numbers are
+    E.164 with the leading `+`.
+  contact:
+    name: Mirai Minds
+    email: sneh@miraiminds.co
+  license:
+    name: Proprietary
+servers:
+  - url: https://api.voice.miraiminds.co
+    description: Production (the only host; there is no staging host and no sk_test_ keys)
+security:
+  - bearerAuth: []
+tags:
+  - name: Agents
+    description: The reusable configuration a call runs.
+  - name: Calls
+    description: Place, inspect, list and abort outbound calls.
+  - name: Wallet
+    description: Prepaid balance and the transaction ledger.
+paths:
+  /v2/agents:
+    post:
+      tags: [Agents]
+      summary: Create an agent
+      operationId: createAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAgentRequest"
+      responses:
+        "201":
+          description: Created — the full agent object.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Agent"
+        "400":
+          $ref: "#/components/responses/InvalidRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    get:
+      tags: [Agents]
+      summary: List agents
+      description: >
+        Newest first. Each element is the full agent object (there is no trimmed
+        summary form). Soft-deleted agents are excluded.
+      operationId: listAgents
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Cursor"
+      responses:
+        "200":
+          description: A page of agents.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentList"
+        "400":
+          $ref: "#/components/responses/InvalidRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /v2/agents/{id}:
+    parameters:
+      - $ref: "#/components/parameters/AgentId"
+    get:
+      tags: [Agents]
+      summary: Get an agent
+      operationId: getAgent
+      responses:
+        "200":
+          description: The agent object.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Agent"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    patch:
+      tags: [Agents]
+      summary: Update an agent
+      description: >
+        Send only the fields you are changing. Nested objects (`voice`,
+        `end_call`, `voicemail`) are replaced wholesale. Takes effect on the next
+        call; calls already in flight keep the configuration they were created
+        with.
+      operationId: updateAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAgentRequest"
+      responses:
+        "200":
+          description: The updated agent object.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Agent"
+        "400":
+          $ref: "#/components/responses/InvalidRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    delete:
+      tags: [Agents]
+      summary: Delete an agent (soft)
+      description: >
+        Soft delete: the agent stops listing and can no longer be used for new
+        calls, but historical calls keep resolving their `agent_id` and calls
+        already in flight are unaffected.
+      operationId: deleteAgent
+      responses:
+        "204":
+          description: No Content.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /v2/calls:
+    post:
+      tags: [Calls]
+      summary: Create a call
+      description: >
+        Asynchronous. Returns `202` with `{id, status:"queued"}` the moment the
+        call is admitted to the queue — the phone has not rung yet. The outcome
+        arrives by webhook (or by polling `GET /v2/calls/{id}`).
+
+
+        The wallet is checked pre-dial: if it cannot cover one minute at the
+        call's tier you get `402` and no call is placed.
+      operationId: createCall
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCallRequest"
+      responses:
+        "202":
+          description: Accepted — the call is queued.
+          headers:
+            Idempotent-Replay:
+              description: >
+                Present with value `true` when this response is a replay of an
+                earlier request that used the same `Idempotency-Key`.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateCallResponse"
+        "400":
+          $ref: "#/components/responses/InvalidRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          description: Insufficient wallet balance (pre-dial gate). No call was placed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error:
+                  code: insufficient_balance
+                  message: wallet balance 0.40 INR is below the minimum for one minute at t1
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          description: The `agent_id` does not exist in your workspace.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error: { code: not_found, message: "no agent agt_01JZQ8F3K7M2N5P9R4T6V8W0XZ" }
+        "409":
+          description: >
+            A request with this `Idempotency-Key` is still being processed (no
+            second call was placed).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error:
+                  code: duplicate_call
+                  message: a call with this idempotency anchor is already being placed
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "501":
+          description: The requested `tier` (`t3`/`t5`) is not live yet.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error: { code: tier_unavailable, message: "tier t3 is not live yet" }
+    get:
+      tags: [Calls]
+      summary: List calls
+      description: Newest first. For reconciliation and reporting, not for driving application state.
+      operationId: listCalls
+      parameters:
+        - name: agent_id
+          in: query
+          description: Only calls run by this agent.
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: Filter by one call status.
+          schema:
+            $ref: "#/components/schemas/CallStatus"
+        - name: from
+          in: query
+          description: RFC 3339 lower bound on `created_at`, inclusive.
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          description: RFC 3339 upper bound on `created_at`, exclusive.
+          schema:
+            type: string
+            format: date-time
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Cursor"
+      responses:
+        "200":
+          description: A page of calls.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CallList"
+        "400":
+          $ref: "#/components/responses/InvalidRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /v2/calls/{id}:
+    parameters:
+      - $ref: "#/components/parameters/CallId"
+    get:
+      tags: [Calls]
+      summary: Get a call
+      operationId: getCall
+      responses:
+        "200":
+          description: The call object.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Call"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /v2/calls/{id}/abort:
+    parameters:
+      - $ref: "#/components/parameters/CallId"
+    post:
+      tags: [Calls]
+      summary: Abort a call
+      description: >
+        Cancels a call that has not ended. Accepted while `queued`, `dialing` or
+        `in_progress` — a live call is hung up on the SIP server, not merely
+        flagged. A call that has already reached a terminal status is refused
+        with `409`.
+      operationId: abortCall
+      responses:
+        "202":
+          description: Accepted — the cancel was signalled.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AbortResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: The call has already ended — nothing to abort.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error: { code: conflict, message: "call call_01JZQ9B4M8N3P6R2S5T7V9W1YA has already ended" }
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /v2/wallet:
+    get:
+      tags: [Wallet]
+      summary: Get balance
+      operationId: getWallet
+      responses:
+        "200":
+          description: The wallet balance.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Balance"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /v2/wallet/transactions:
+    get:
+      tags: [Wallet]
+      summary: List transactions
+      description: The ledger — one row per credit or debit, newest first.
+      operationId: listTransactions
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Cursor"
+      responses:
+        "200":
+          description: A page of ledger rows.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionList"
+        "400":
+          $ref: "#/components/responses/InvalidRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+webhooks:
+  call.queued:
+    post:
+      summary: call.queued (opt-in)
+      operationId: webhookCallQueued
+      description: >
+        Fired when the call is admitted to the queue. Opt-in — ask ops to enable
+        it per agent. Delivered to the call's `webhook_url`, signed with the
+        `X-Mirai-Signature` header.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Event"
+      responses:
+        "2XX":
+          description: Any 2xx acknowledges the delivery and stops retries.
+  call.started:
+    post:
+      summary: call.started
+      operationId: webhookCallStarted
+      description: Media is live; the conversation has begun. `data.call.status` = `in_progress`.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Event"
+      responses:
+        "2XX":
+          description: Any 2xx acknowledges the delivery.
+  call.completed:
+    post:
+      summary: call.completed (terminal)
+      operationId: webhookCallCompleted
+      description: The call connected and finished normally. `data.call.status` = `completed`.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Event"
+      responses:
+        "2XX":
+          description: Any 2xx acknowledges the delivery.
+  call.voicemail:
+    post:
+      summary: call.voicemail (terminal)
+      operationId: webhookCallVoicemail
+      description: >
+        An answering machine answered. `data.call.status` = `voicemail`, always
+        with `ended_reason` = `voicemail`.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Event"
+      responses:
+        "2XX":
+          description: Any 2xx acknowledges the delivery.
+  call.failed:
+    post:
+      summary: call.failed (terminal)
+      operationId: webhookCallFailed
+      description: >
+        The call did not connect or the pipeline errored. Read
+        `data.call.status` to tell the modes apart — one of `no_answer`, `busy`,
+        `failed`, `timeout`.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Event"
+      responses:
+        "2XX":
+          description: Any 2xx acknowledges the delivery.
+  call.aborted:
+    post:
+      summary: call.aborted (terminal)
+      operationId: webhookCallAborted
+      description: You cancelled the call. `data.call.status` = `aborted`, `ended_reason` = `aborted-by-api`.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Event"
+      responses:
+        "2XX":
+          description: Any 2xx acknowledges the delivery.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: >
+        A per-workspace secret key, `sk_live_` followed by 32 hex characters,
+        passed as `Authorization: Bearer sk_live_…`. Issued by ops. Only the
+        SHA-256 of the key is stored server-side.
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      description: Page size, 1–100.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    Cursor:
+      name: cursor
+      in: query
+      description: The `next_cursor` from the previous page.
+      schema:
+        type: string
+    AgentId:
+      name: id
+      in: path
+      required: true
+      description: The agent ID, `agt_<ulid>`.
+      schema:
+        type: string
+        example: agt_01JZQ8F3K7M2N5P9R4T6V8W0XZ
+    CallId:
+      name: id
+      in: path
+      required: true
+      description: The call ID, `call_<ulid>`.
+      schema:
+        type: string
+        example: call_01JZQ9B4M8N3P6R2S5T7V9W1YA
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      description: >
+        Retry-safe anchor for `POST /v2/calls`. Reuse the key and the original
+        response is replayed byte-for-byte with no second call. Held 24h. Bodies
+        are not compared. Max 255 characters.
+      schema:
+        type: string
+        maxLength: 255
+        example: order-8842-confirm-1
+  responses:
+    InvalidRequest:
+      description: The request is malformed or a field is invalid.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              code: invalid_request
+              message: "to must be an E.164 phone number, got '9876543210'"
+    Unauthorized:
+      description: Missing, malformed or unknown key.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: { code: unauthorized, message: "unknown api key" }
+    Forbidden:
+      description: The key is valid but revoked. This is the only thing that returns 403.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: { code: forbidden, message: "api key has been revoked" }
+    NotFound:
+      description: >
+        No such resource in your workspace — including one that exists in another
+        workspace (deliberately indistinguishable from a non-existent ID).
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: { code: not_found, message: "no agent agt_01JZQ8F3K7M2N5P9R4T6V8W0XZ" }
+    RateLimited:
+      description: >
+        Request rate exceeded, or the workspace queue is full (500 calls accepted
+        and not yet ended). Concurrency does not 429 — over-cap calls queue.
+        `error.message` says which limit was hit.
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: { code: rate_limited, message: "request rate limit exceeded for this key" }
+  schemas:
+    Agent:
+      type: object
+      description: The published agent object.
+      required:
+        - id
+        - object
+        - name
+        - system_prompt
+        - first_message
+        - voice
+        - language
+        - max_duration_secs
+        - end_call
+        - voicemail
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          description: Server-minted `agt_<ulid>`.
+          example: agt_01JZQ8F3K7M2N5P9R4T6V8W0XZ
+        object:
+          type: string
+          const: agent
+        name:
+          type: string
+          description: Human label.
+        system_prompt:
+          type: string
+          description: The agent's instructions. Supports `{{variable}}` placeholders. Max 8000 characters.
+        first_message:
+          type: string
+          description: Spoken the moment the callee answers. Max 500 characters.
+        voice:
+          $ref: "#/components/schemas/Voice"
+        language:
+          type: string
+          description: BCP-47 conversation language, e.g. `hi-IN`, `en-IN`.
+          example: hi-IN
+        max_duration_secs:
+          type: integer
+          minimum: 30
+          maximum: 1800
+          default: 300
+          description: "Hard cap. The call ends with ended_reason `exceeded-max-duration`."
+        end_call:
+          $ref: "#/components/schemas/EndCall"
+        voicemail:
+          $ref: "#/components/schemas/Voicemail"
+        emit_queued_webhook:
+          type: boolean
+          readOnly: true
+          description: >
+            Ops-only flag that turns on the opt-in `call.queued` webhook. Not
+            customer-settable; only present in the response when enabled. Not
+            currently in the published field table (see report).
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    Voice:
+      type: object
+      required: [voice_id]
+      properties:
+        voice_id:
+          type: string
+          description: A voice slug from the catalogue.
+          example: priya
+        language:
+          type: string
+          description: >
+            Rendering language for the voice. Omit to inherit the agent's
+            `language` (the gateway resolves it, so the response always shows the
+            effective value). Stored but not yet honoured — the voice renders in
+            the top-level `language` today.
+          example: hi-IN
+    EndCall:
+      type: object
+      required: [enabled, message, confirm]
+      properties:
+        enabled:
+          type: boolean
+          default: true
+          description: Whether the `end_call` tool is available. Stored; enforcement rolling out.
+        message:
+          type: string
+          default: "Thanks, have a good day"
+          description: Spoken farewell.
+        confirm:
+          type: boolean
+          default: true
+          description: Require a second `end_call` within the confirmation window. Stored; enforcement rolling out.
+    Voicemail:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: string
+          enum: [hangup, message]
+          default: hangup
+          description: What to do when an answering machine is detected.
+        message:
+          type: string
+          description: Required when `action` is `message`. Spoken once, then the call ends.
+    CreateAgentRequest:
+      type: object
+      required: [name, system_prompt, first_message, voice, language]
+      properties:
+        name:
+          type: string
+        system_prompt:
+          type: string
+          maxLength: 8000
+        first_message:
+          type: string
+          maxLength: 500
+        voice:
+          $ref: "#/components/schemas/VoiceInput"
+        language:
+          type: string
+          example: hi-IN
+        max_duration_secs:
+          type: integer
+          minimum: 30
+          maximum: 1800
+          default: 300
+        end_call:
+          $ref: "#/components/schemas/EndCallInput"
+        voicemail:
+          $ref: "#/components/schemas/VoicemailInput"
+    UpdateAgentRequest:
+      type: object
+      description: Every field optional. Nested objects are replaced wholesale.
+      properties:
+        name:
+          type: string
+        system_prompt:
+          type: string
+          maxLength: 8000
+        first_message:
+          type: string
+          maxLength: 500
+        voice:
+          $ref: "#/components/schemas/VoiceInput"
+        language:
+          type: string
+        max_duration_secs:
+          type: integer
+          minimum: 30
+          maximum: 1800
+        end_call:
+          $ref: "#/components/schemas/EndCallInput"
+        voicemail:
+          $ref: "#/components/schemas/VoicemailInput"
+    VoiceInput:
+      type: object
+      required: [voice_id]
+      properties:
+        voice_id:
+          type: string
+          example: priya
+        language:
+          type: string
+          example: hi-IN
+    EndCallInput:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        message:
+          type: string
+        confirm:
+          type: boolean
+    VoicemailInput:
+      type: object
+      properties:
+        action:
+          type: string
+          enum: [hangup, message]
+        message:
+          type: string
+    CreateCallRequest:
+      type: object
+      required: [agent_id, to]
+      properties:
+        agent_id:
+          type: string
+          description: The agent to run.
+          example: agt_01JZQ8F3K7M2N5P9R4T6V8W0XZ
+        to:
+          type: string
+          description: E.164 destination.
+          example: "+919876543210"
+        variables:
+          type: object
+          additionalProperties:
+            type: string
+          description: >
+            Flat string map substituted into the agent's `system_prompt` and
+            `first_message` (`{{key}}`). Max 32 keys; each value max 512
+            characters. A missing key renders as an empty string.
+        webhook_url:
+          type: string
+          format: uri
+          description: HTTPS URL for lifecycle events. Max 2048 characters, must be https.
+        max_duration_secs:
+          type: integer
+          minimum: 30
+          maximum: 1800
+          description: Overrides the agent's cap for this call only.
+        tier:
+          type: string
+          enum: [t1, t3, t5]
+          description: Defaults to your key's tier. `t3`/`t5` return 501 today.
+    CreateCallResponse:
+      type: object
+      required: [id, status]
+      properties:
+        id:
+          type: string
+          example: call_01JZQ9B4M8N3P6R2S5T7V9W1YA
+        status:
+          type: string
+          const: queued
+    AbortResponse:
+      type: object
+      required: [id, status]
+      properties:
+        id:
+          type: string
+          example: call_01JZQ9B4M8N3P6R2S5T7V9W1YA
+        status:
+          type: string
+          const: aborted
+    Call:
+      type: object
+      description: The published call object — the same shape carried inside a webhook's `data.call`.
+      required:
+        - id
+        - object
+        - agent_id
+        - to
+        - status
+        - ended_reason
+        - started_at
+        - ended_at
+        - duration_secs
+        - cost
+      properties:
+        id:
+          type: string
+          example: call_01JZQ9B4M8N3P6R2S5T7V9W1YA
+        object:
+          type: string
+          const: call
+        agent_id:
+          type: string
+          example: agt_01JZQ8F3K7M2N5P9R4T6V8W0XZ
+        to:
+          type: string
+          example: "+919876543210"
+        status:
+          $ref: "#/components/schemas/CallStatus"
+        ended_reason:
+          type: [string, "null"]
+          description: >
+            Why the call ended; `null` while running. Open vocabulary — branch on
+            `status` for control flow, use `ended_reason` for analytics, and keep
+            a default branch. Known values: `assistant-ended-call`,
+            `customer-ended-call`, `exceeded-max-duration`,
+            `customer-did-not-answer`, `customer-busy`, `voicemail`,
+            `silence-timed-out`, `idle-timed-out`, `no-media`, `no-trunk`,
+            `aborted-by-api`, `duplicate-call`, `configuration-error`,
+            `assistant-error`, `transferred`, `balance-exhausted`.
+          example: assistant-ended-call
+        started_at:
+          type: [string, "null"]
+          format: date-time
+          description: RFC 3339 UTC. Set when media goes live; `null` if the call never connected.
+        ended_at:
+          type: [string, "null"]
+          format: date-time
+          description: RFC 3339 UTC.
+        duration_secs:
+          type: integer
+          description: Billable seconds of live media. `0` for calls that never connected.
+        cost:
+          $ref: "#/components/schemas/Cost"
+    Cost:
+      type: object
+      required: [amount_inr, per_min_inr]
+      properties:
+        amount_inr:
+          type: number
+          description: Amount charged for the call. `0` until the call ends.
+        per_min_inr:
+          type: number
+          description: The per-minute rate applied (the tier rate; populated even before the call ends).
+    CallStatus:
+      type: string
+      description: >
+        Statuses only move forward; a terminal status never changes. Terminal:
+        completed, voicemail, no_answer, busy, failed, timeout, aborted.
+      enum:
+        - queued
+        - dialing
+        - in_progress
+        - completed
+        - voicemail
+        - no_answer
+        - busy
+        - failed
+        - timeout
+        - aborted
+    Balance:
+      type: object
+      required: [balance_inr, currency, updated_at]
+      properties:
+        balance_inr:
+          type: number
+          description: Spendable balance. Never negative.
+        currency:
+          type: string
+          const: INR
+        updated_at:
+          type: string
+          format: date-time
+          description: When the balance last changed.
+    Transaction:
+      type: object
+      description: A ledger row (the public `wallet_transaction`).
+      required:
+        - id
+        - object
+        - type
+        - amount_inr
+        - balance_after_inr
+        - call_id
+        - description
+        - created_at
+      properties:
+        id:
+          type: string
+          example: txn_01JZQ9D6P2R5S8T4V7W9X1Y3ZB
+        object:
+          type: string
+          const: wallet_transaction
+        type:
+          type: string
+          enum: [credit, debit]
+        amount_inr:
+          type: number
+          description: Always positive; read `type` for direction.
+        balance_after_inr:
+          type: number
+          description: Balance immediately after this row.
+        call_id:
+          type: [string, "null"]
+          description: Set on call debits, `null` on top-ups and adjustments.
+          example: call_01JZQ9B4M8N3P6R2S5T7V9W1YA
+        description:
+          type: string
+          description: Human-readable. Do not parse.
+        created_at:
+          type: string
+          format: date-time
+    AgentList:
+      allOf:
+        - $ref: "#/components/schemas/Page"
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: "#/components/schemas/Agent"
+    CallList:
+      allOf:
+        - $ref: "#/components/schemas/Page"
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: "#/components/schemas/Call"
+    TransactionList:
+      allOf:
+        - $ref: "#/components/schemas/Page"
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: "#/components/schemas/Transaction"
+    Page:
+      type: object
+      description: The cursor-paginated list envelope every list endpoint returns.
+      required: [data, has_more, next_cursor]
+      properties:
+        data:
+          type: array
+          items: {}
+        has_more:
+          type: boolean
+        next_cursor:
+          type: [string, "null"]
+          description: Pass back as `cursor` for the next page; `null` on the last page.
+    Event:
+      type: object
+      description: >
+        A webhook lifecycle event, POSTed to the call's `webhook_url` and signed
+        with `X-Mirai-Signature: t=<unix>,v1=<hex hmac-sha256(secret, t + "." +
+        raw_body)>` (verify against the RAW body; reject if `|now − t| > 300s`).
+      required: [id, type, created_at, data]
+      properties:
+        id:
+          type: string
+          description: "`evt_<ulid>`. Stable across retries of the same event — dedupe on it."
+          example: evt_01JZQ9C5N9P4R7S3T6V8W2X4YB
+        type:
+          type: string
+          enum:
+            - call.queued
+            - call.started
+            - call.completed
+            - call.voicemail
+            - call.failed
+            - call.aborted
+        created_at:
+          type: string
+          format: date-time
+          description: When the event was generated, not when it was delivered.
+        data:
+          type: object
+          required: [call]
+          properties:
+            call:
+              $ref: "#/components/schemas/Call"
+    Error:
+      type: object
+      description: The single error envelope used by every v2 error.
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              description: Stable, machine-readable. Open enum — always keep a default branch keyed on HTTP status.
+              enum:
+                - invalid_request
+                - unauthorized
+                - forbidden
+                - not_found
+                - conflict
+                - duplicate_call
+                - insufficient_balance
+                - tier_unavailable
+                - rate_limited
+                - internal
+            message:
+              type: string
+              description: Human-readable. Not stable — never parse it.
