@@ -19,6 +19,9 @@ export default defineConfig({
     mermaid(),
     starlight({
       title: "Voice Agents",
+      // The standing Mirai theme. Self-hosted fonts + tokens; see src/styles/mirai.css.
+      customCss: ["./src/styles/mirai.css"],
+      components: { SiteTitle: "./src/components/SiteTitle.astro" },
       social: [
         {
           icon: "discord",

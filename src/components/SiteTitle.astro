@@ -1,0 +1,27 @@
+---
+/* Overrides Starlight's SiteTitle. The three bars are the brand mark: a voice
+   on a wire. Rendered inline rather than as an <img> so it inherits the accent
+   colour in both themes and costs no extra request. */
+import type { Props } from '@astrojs/starlight/props';
+const { siteTitle, siteTitleHref } = Astro.props;
+---
+
+<a href={siteTitleHref} class="site-title sl-flex">
+  <span class="mirai-signal" aria-hidden="true"><span></span><span></span><span></span></span>
+  <span class="title-text">{siteTitle}</span>
+</a>
+
+<style>
+  .site-title {
+    align-items: center;
+    gap: 0;
+    text-decoration: none;
+    color: var(--sl-color-white);
+    font-weight: 560;
+    letter-spacing: -0.028em;
+    font-size: var(--sl-text-h4);
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .title-text { line-height: 1; }
+</style>

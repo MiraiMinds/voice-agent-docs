@@ -1,0 +1,386 @@
+/* ===========================================================================
+   MIRAI VOICE — "Signal"
+   The standing visual theme for everything voice: docs, console, landing.
+   ---------------------------------------------------------------------------
+   The idea: this is telephony infrastructure, not another pastel AI product.
+   So the page is near-monochrome and quiet, and exactly one colour is allowed
+   to speak — a saffron that is warm and Indian rather than the cyan/violet
+   every AI tool defaults to. Colour marks the live thing: the active link, the
+   current page, the signal bars. Everywhere else, restraint.
+
+   Craft rules followed here (Emil Kowalski's design-engineering principles):
+     * Enters use ease-OUT. Something arriving should decelerate into place.
+       ease-in on an enter is the single most common motion mistake and it
+       makes an interface feel like it is fighting you.
+     * Depth comes from semi-transparent shadows, not solid 1px borders. A
+       hairline drawn in opaque grey reads as a line; a shadow in rgba reads as
+       elevation, and it survives both colour schemes without being re-picked.
+     * Motion is selective. Nav, links and cards move. Body text never does —
+       animating a paragraph the reader is trying to read is hostile.
+     * Everything respects prefers-reduced-motion.
+
+   Self-hosted fonts, deliberately: the docs vhost ships
+   `Content-Security-Policy: default-src 'self'`, so a Google Fonts <link>
+   would be blocked and the site would silently fall back to system serif.
+   =========================================================================== */
+
+/* ---------------------------------------------------------------- fonts -- */
+/* Variable fonts, latin subset only — 52 KB for the whole type system. */
+@font-face {
+  font-family: "Geist";
+  src: url("/fonts/geist-latin.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/fonts/geist-mono-latin.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* --------------------------------------------------------------- tokens -- */
+:root {
+  /* The one colour. Saffron/marigold — warm, Indian, and deliberately not the
+     blue-violet of every other AI developer platform. Two values because a hue
+     vivid enough to glow on black is unreadable as link text on white; this is
+     a contrast requirement, not a preference. */
+  --mirai-saffron: #ff7a1a;
+  --mirai-saffron-ink: #b4490a; /* AA on white — link text in light mode */
+  --mirai-saffron-glow: #ff9440; /* dark mode */
+
+  /* "Connected" green. Used ONLY for live/answered state, never decoration —
+     if this colour appears, something is actually up. */
+  --mirai-live: #16a34a;
+  --mirai-live-glow: #4ade80;
+
+  /* Warm neutrals. Pure grey next to saffron reads cold and slightly dirty;
+     every step carries a few degrees of warmth so the palette stays one family. */
+  --mirai-n-50: #fdfcfa;
+  --mirai-n-100: #f6f4f1;
+  --mirai-n-200: #ebe8e3;
+  --mirai-n-300: #d8d4cd;
+  --mirai-n-400: #a8a29a;
+  --mirai-n-500: #78716a;
+  --mirai-n-600: #57534e;
+  --mirai-n-700: #3a3735;
+  --mirai-n-800: #232120;
+  --mirai-n-850: #1a1918;
+  --mirai-n-900: #131211;
+  --mirai-n-950: #0c0b0a;
+
+  /* Motion. Enter decelerates, exit accelerates. The two are NOT the same
+     curve reversed — that is what makes a UI feel mechanical. */
+  --mirai-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --mirai-ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+  --mirai-ease-move: cubic-bezier(0.65, 0, 0.35, 1);
+  --mirai-fast: 120ms;
+  --mirai-normal: 200ms;
+  --mirai-slow: 380ms;
+
+  /* Elevation as translucency, never as a grey line. */
+  --mirai-shadow-sm: 0 1px 2px rgba(12, 11, 10, 0.06),
+    0 1px 1px rgba(12, 11, 10, 0.04);
+  --mirai-shadow-md: 0 2px 4px rgba(12, 11, 10, 0.05),
+    0 4px 12px rgba(12, 11, 10, 0.06);
+  --mirai-shadow-lg: 0 4px 8px rgba(12, 11, 10, 0.05),
+    0 12px 32px rgba(12, 11, 10, 0.09);
+  --mirai-ring: 0 0 0 3px rgba(255, 122, 26, 0.22);
+
+  --mirai-radius: 8px;
+  --mirai-radius-lg: 12px;
+}
+
+/* ------------------------------------------------- starlight: dark mode -- */
+:root,
+:root[data-theme="dark"] {
+  --sl-font: "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --sl-font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --sl-color-accent-low: #4a2408;
+  --sl-color-accent: var(--mirai-saffron);
+  --sl-color-accent-high: var(--mirai-saffron-glow);
+
+  --sl-color-white: #ffffff;
+  --sl-color-gray-1: var(--mirai-n-100);
+  --sl-color-gray-2: var(--mirai-n-300);
+  --sl-color-gray-3: var(--mirai-n-400);
+  --sl-color-gray-4: var(--mirai-n-600);
+  --sl-color-gray-5: var(--mirai-n-700);
+  --sl-color-gray-6: var(--mirai-n-800);
+  --sl-color-gray-7: var(--mirai-n-850);
+  --sl-color-black: var(--mirai-n-950);
+
+  --sl-color-bg: var(--mirai-n-950);
+  --sl-color-bg-nav: rgba(12, 11, 10, 0.72);
+  --sl-color-bg-sidebar: var(--mirai-n-950);
+  --sl-color-bg-inline-code: var(--mirai-n-850);
+  --sl-color-text: var(--mirai-n-200);
+  --sl-color-text-accent: var(--mirai-saffron-glow);
+  --sl-color-hairline: rgba(255, 255, 255, 0.07);
+  --sl-color-hairline-light: rgba(255, 255, 255, 0.1);
+  --sl-color-hairline-shade: rgba(255, 255, 255, 0.05);
+
+  --mirai-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --mirai-shadow-md: 0 2px 4px rgba(0, 0, 0, 0.35), 0 4px 14px rgba(0, 0, 0, 0.4);
+  --mirai-shadow-lg: 0 4px 10px rgba(0, 0, 0, 0.4), 0 16px 40px rgba(0, 0, 0, 0.55);
+  --mirai-ring: 0 0 0 3px rgba(255, 148, 64, 0.26);
+  --mirai-code-bg: #100f0e;
+}
+
+/* ------------------------------------------------ starlight: light mode -- */
+:root[data-theme="light"] {
+  --sl-color-accent-low: #ffe8d6;
+  --sl-color-accent: var(--mirai-saffron-ink);
+  --sl-color-accent-high: #7c3306;
+
+  --sl-color-white: var(--mirai-n-950);
+  --sl-color-gray-1: var(--mirai-n-900);
+  --sl-color-gray-2: var(--mirai-n-700);
+  --sl-color-gray-3: var(--mirai-n-500);
+  --sl-color-gray-4: var(--mirai-n-400);
+  --sl-color-gray-5: var(--mirai-n-300);
+  --sl-color-gray-6: var(--mirai-n-100);
+  --sl-color-gray-7: var(--mirai-n-100);
+  --sl-color-black: var(--mirai-n-50);
+
+  --sl-color-bg: var(--mirai-n-50);
+  --sl-color-bg-nav: rgba(253, 252, 250, 0.75);
+  --sl-color-bg-sidebar: var(--mirai-n-50);
+  --sl-color-bg-inline-code: var(--mirai-n-100);
+  --sl-color-text: var(--mirai-n-700);
+  --sl-color-text-accent: var(--mirai-saffron-ink);
+  --sl-color-hairline: rgba(12, 11, 10, 0.08);
+  --sl-color-hairline-light: rgba(12, 11, 10, 0.11);
+  --sl-color-hairline-shade: rgba(12, 11, 10, 0.05);
+  --mirai-code-bg: #faf8f5;
+}
+
+/* ----------------------------------------------------------- typography -- */
+body {
+  font-feature-settings: "cv01", "cv03", "ss03";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.006em;
+}
+
+/* Tight, confident headings. Geist is drawn generously; without negative
+   tracking large sizes look loose and undesigned. Tracking scales with size —
+   a fixed -0.02em would over-tighten an h4 into mush. */
+.sl-markdown-content :is(h1, h2, h3, h4) {
+  font-weight: 600;
+  letter-spacing: -0.028em;
+}
+.sl-markdown-content h1 { letter-spacing: -0.036em; }
+.sl-markdown-content h2 {
+  letter-spacing: -0.03em;
+  padding-block-end: 0.35rem;
+  border-block-end: 1px solid var(--sl-color-hairline-shade);
+}
+.sl-markdown-content h4 { letter-spacing: -0.018em; }
+
+/* Prose measure. Documentation read edge-to-edge on a wide monitor is
+   genuinely harder to parse — the eye loses the line on the return sweep. */
+.sl-markdown-content p,
+.sl-markdown-content li {
+  max-width: 74ch;
+  line-height: 1.68;
+}
+
+/* The anchor link that appears beside a heading on hover. */
+.sl-markdown-content :is(h2, h3) > a {
+  transition: color var(--mirai-fast) var(--mirai-ease-out);
+}
+
+/* ------------------------------------------------------------- surfaces -- */
+/* Frosted nav — the page slides under it rather than being clipped by it. */
+header.header {
+  backdrop-filter: saturate(180%) blur(14px);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  border-block-end: 1px solid var(--sl-color-hairline-shade);
+  box-shadow: none;
+}
+
+/* Cards, asides and code blocks get elevation instead of an outline. */
+.sl-markdown-content :is(.starlight-aside, pre, .card) {
+  border-radius: var(--mirai-radius-lg);
+  box-shadow: var(--mirai-shadow-sm);
+}
+
+.sl-markdown-content pre {
+  background: var(--mirai-code-bg) !important;
+  border: 1px solid var(--sl-color-hairline-shade);
+  padding: 1rem 1.1rem;
+  font-size: 0.875rem;
+  line-height: 1.62;
+}
+.sl-markdown-content code {
+  font-feature-settings: "zero", "ss01";
+}
+.sl-markdown-content :not(pre) > code {
+  border-radius: 5px;
+  padding: 0.16em 0.4em;
+  font-size: 0.875em;
+  border: 1px solid var(--sl-color-hairline-shade);
+}
+
+/* Asides: a saffron/live spine rather than a full tinted box. Quieter, and it
+   keeps the reading surface one colour. */
+.sl-markdown-content .starlight-aside {
+  border: 1px solid var(--sl-color-hairline);
+  border-inline-start: 2px solid var(--sl-color-accent);
+  background: color-mix(in srgb, var(--sl-color-accent) 4%, transparent);
+}
+.sl-markdown-content .starlight-aside--tip {
+  border-inline-start-color: var(--mirai-live);
+  background: color-mix(in srgb, var(--mirai-live) 5%, transparent);
+}
+.sl-markdown-content .starlight-aside--danger {
+  border-inline-start-color: #dc2626;
+  background: color-mix(in srgb, #dc2626 5%, transparent);
+}
+
+/* Tables — API reference lives or dies on these. */
+.sl-markdown-content table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: var(--mirai-radius);
+  overflow: hidden;
+  box-shadow: var(--mirai-shadow-sm);
+  font-size: 0.9375rem;
+}
+.sl-markdown-content :is(th, td) {
+  border: none;
+  border-block-end: 1px solid var(--sl-color-hairline-shade);
+  padding: 0.7rem 0.9rem;
+}
+.sl-markdown-content th {
+  background: color-mix(in srgb, var(--sl-color-gray-6) 55%, transparent);
+  font-weight: 550;
+  letter-spacing: -0.01em;
+}
+.sl-markdown-content tr:last-child td { border-block-end: none; }
+/* Parameter names in the first column are code — treat them as such. */
+.sl-markdown-content td:first-child code { color: var(--sl-color-text-accent); }
+
+/* ------------------------------------------------------------ sidebar --- */
+/* The current page is marked with a saffron spine that grows out of nothing.
+   scaleY is animated rather than height so it never triggers layout. */
+nav.sidebar a[aria-current="page"] {
+  position: relative;
+  font-weight: 550;
+  background: color-mix(in srgb, var(--sl-color-accent) 8%, transparent);
+}
+nav.sidebar a[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  inset-block: 4px;
+  inset-inline-start: -1px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--sl-color-accent);
+  animation: mirai-spine var(--mirai-normal) var(--mirai-ease-out) both;
+}
+@keyframes mirai-spine {
+  from { transform: scaleY(0); opacity: 0; }
+  to   { transform: scaleY(1); opacity: 1; }
+}
+nav.sidebar a {
+  border-radius: 6px;
+  transition: background-color var(--mirai-fast) var(--mirai-ease-out),
+    color var(--mirai-fast) var(--mirai-ease-out);
+}
+nav.sidebar a:hover {
+  background: color-mix(in srgb, var(--sl-color-gray-5) 22%, transparent);
+}
+
+/* --------------------------------------------------------------- links -- */
+/* Underline grows from the left on hover using scaleX — a transform, so it is
+   composited and cannot reflow the paragraph around it. */
+.sl-markdown-content a:not(.sl-flex, .card, :where(h1,h2,h3,h4) > a) {
+  color: var(--sl-color-text-accent);
+  text-decoration: none;
+  position: relative;
+  font-weight: 480;
+}
+.sl-markdown-content a:not(.sl-flex, .card, :where(h1,h2,h3,h4) > a)::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: -1px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.42;
+  transform: scaleX(1);
+  transform-origin: left;
+  transition: opacity var(--mirai-fast) var(--mirai-ease-out);
+}
+.sl-markdown-content a:not(.sl-flex, .card, :where(h1,h2,h3,h4) > a):hover::after {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------- focus -- */
+/* One visible, consistent focus ring. Never remove it. */
+:where(a, button, input, select, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--sl-color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* -------------------------------------------------------------- signal -- */
+/* The brand motif: three bars, the shape of a voice on a wire. Used beside the
+   site title. It animates ONLY while the page is fresh — a permanently looping
+   element in the corner of a documentation page is a distraction, not a
+   delight, so it runs a few cycles and settles. */
+.mirai-signal {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 0.85em;
+  margin-inline-end: 0.5rem;
+  vertical-align: -0.06em;
+}
+.mirai-signal span {
+  display: block;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--sl-color-accent);
+  transform-origin: bottom;
+  animation: mirai-wave 1100ms var(--mirai-ease-move) 3;
+}
+.mirai-signal span:nth-child(1) { height: 45%; animation-delay: 0ms; }
+.mirai-signal span:nth-child(2) { height: 100%; animation-delay: 130ms; }
+.mirai-signal span:nth-child(3) { height: 65%; animation-delay: 260ms; }
+@keyframes mirai-wave {
+  0%, 100% { transform: scaleY(0.55); opacity: 0.75; }
+  50%      { transform: scaleY(1);    opacity: 1; }
+}
+
+/* ---------------------------------------------------------- page enter -- */
+/* One quiet settle on navigation. 380ms and 8px — enough to register that the
+   page changed, not enough to make a reader wait. */
+.sl-markdown-content {
+  animation: mirai-enter var(--mirai-slow) var(--mirai-ease-out) both;
+}
+@keyframes mirai-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ------------------------------------------------------------- reduced -- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
