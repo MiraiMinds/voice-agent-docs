@@ -48,6 +48,7 @@ export default defineConfig({
           items: [
             { label: "Overview", slug: "general/overview" },
             { label: "Billing & Tiers", slug: "general/tiers" },
+            { label: "Roadmap", slug: "general/roadmap" },
             { label: "Campaign", slug: "general/campaign" },
           ],
         },

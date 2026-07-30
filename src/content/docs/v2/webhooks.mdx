@@ -34,7 +34,7 @@ Every event has the same shape.
       "started_at": "2026-07-26T09:15:02Z",
       "ended_at": "2026-07-26T09:16:38Z",
       "duration_secs": 96,
-      "cost": { "amount_inr": 2, "per_min_inr": 1 }
+      "cost": { "amount_inr": 1.6, "per_min_inr": 1 }
     }
   }
 }
@@ -126,7 +126,7 @@ retry-tomorrow, `failed` is a page-someone.
       "started_at": "2026-07-26T09:18:02Z",
       "ended_at": "2026-07-26T09:18:20Z",
       "duration_secs": 18,
-      "cost": { "amount_inr": 1, "per_min_inr": 1 }
+      "cost": { "amount_inr": 0.3, "per_min_inr": 1 }
     }
   }
 }
@@ -136,8 +136,8 @@ retry-tomorrow, `failed` is a page-someone.
 what identifies the answering machine in the first place, so the pair is the
 only combination you will see.
 
-Voicemail calls **are billed** — media was live. 18 seconds rounds up to one
-minute. See [rounding](/general/tiers/#rounding).
+Voicemail calls **are billed** — media was live. 18 seconds bills as
+18 seconds: ₹0.30 at `t1`. See [metering](/general/tiers/#metering).
 
 ### `call.aborted`
 

@@ -205,8 +205,11 @@ Note the differences that will bite:
   API; ask ops.
 - **`credits` becomes `cost`** on the call itself, in rupees rather than credit
   units, and the running balance moves to [`GET /v2/wallet`](/v2/wallet/).
-- **No `end-of-call` analysis event.** Post-call analytics is a `t3` feature and
-  [is not live](/general/tiers/#feature-matrix).
+- **No `end-of-call` analysis event yet.** Post-call analytics (AI summary +
+  QA score on every call) is [part of every tier](/general/tiers/#feature-matrix)
+  and its v2 API surface is rolling out — see the
+  [roadmap](/general/roadmap/). Until it lands, v1's `analysisPlan` is the only
+  API surface for post-call analysis.
 
 ## Errors
 

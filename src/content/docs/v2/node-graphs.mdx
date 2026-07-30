@@ -16,8 +16,10 @@ contract so you can design against it, but it is **not live**: today
 `501 tier_unavailable`. Everything on this page — the schema, the node
 library, the authoring API — is a **proposal under active development**. Field
 names and limits may change before launch. Do not build a production integration
-against it yet. See [Billing & tiers](/general/tiers/#coming-soon) for status,
-and ask your account contact for timelines.
+against it yet. Target: **Q4 2026**, alongside the visual
+[orchestration platform](/general/roadmap/#orchestration-platform). See the
+[roadmap](/general/roadmap/) for status, and confirm timelines with your
+account contact.
 :::
 
 ## The idea: a call is a graph, not a prompt
@@ -40,7 +42,7 @@ exists.
 <CardGrid>
   <Card title="t3 — our graphs" icon="puzzle">
     On `t3`, calls run node graphs we author and maintain (e.g. order
-    confirmation). You get the structure and the [analytics](/general/tiers/#feature-matrix)
+    confirmation). You get the [structure](/general/tiers/#feature-matrix)
     without authoring anything.
   </Card>
   <Card title="t5 — your graphs" icon="pencil">
@@ -201,7 +203,9 @@ you.
 
 ## When it ships
 
-Node graphs go live with the `t5` tier. Until then:
+Node graphs go live with the `t5` tier — target **Q4 2026**, with the visual
+[orchestration platform](/general/roadmap/#orchestration-platform) entering
+beta in the same window so non-engineers can author graphs too. Until then:
 
 - Design against the schema above, but expect field names and limits to move.
 - Do not ship a code path that sends `"tier": "t5"` — it returns
@@ -209,5 +213,5 @@ Node graphs go live with the `t5` tier. Until then:
 - The authoring API (create / update / validate a graph) will be documented here
   when it lands.
 
-Watch [Billing & tiers](/general/tiers/) for the status flip, or ask your account
-contact.
+Watch the [roadmap](/general/roadmap/) and [Billing & tiers](/general/tiers/)
+for the status flip, or ask your account contact.

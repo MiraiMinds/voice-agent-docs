@@ -1,11 +1,11 @@
 ---
 title: Billing & tiers
-description: What a minute costs, how minutes are rounded, what each tier can do, and what happens at zero balance.
+description: What a minute costs, how seconds are metered, what each tier can do, and what happens at zero balance.
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-One number to remember: **₹1 per minute**, rounded up, minimum one minute.
+One number to remember: **₹1 per minute**, metered per second.
 That is the `t1` transactional tier, and it is the only tier live today.
 
 | Tier | Rate | Status |
@@ -26,17 +26,22 @@ What the tier buys is not a discount, it is **what the call can do**.
 | Core call (ASR → LLM → TTS, Mira stack) | ✅ | ✅ | ✅ |
 | Voicemail detection | ✅ basic | ✅ proper | ✅ |
 | Clean call ending | ✅ | ✅ | ✅ |
-| Post-call analytics | ❌ | ✅ | ✅ |
+| Post-call analytics (AI summary + QA score, every call) | ✅ | ✅ | ✅ |
+| Human handoff (warm transfer) | ✅ | ✅ | ✅ |
 | Premium TTS voice option + fallback | ❌ | ✅ | ✅ |
 | Node-graph runtime | ❌ | ✅ (our graph) | ✅ (your graph) |
-| Human handoff (SIP transfer) | ❌ | ✅ | ✅ |
 | IVR detect + navigate | ❌ | ✅ | ✅ |
 | Customer-authored node graph | ❌ | ❌ | ✅ |
-| Priority capacity | best-effort | floor | floor |
+| Priority capacity | standard | reserved floor | reserved floor |
 
-**Read it as a contract.** A ❌ is not "degraded", it is "absent". On `t1`,
-post-call analytics does not run at all — there is no analysis object in the
-webhook and no summary to fetch later. That is what makes ₹1 possible.
+**Every call is opened.** On every tier, each completed call gets an AI summary
+and a QA score — 100% of calls, not a sample. Warm transfer to a human is part
+of the same lattice: any tier can hand a caller to a person. See the
+[roadmap](/general/roadmap/) for rollout status of both on `t1`.
+
+**Read the ❌ as a contract.** A ❌ is not "degraded", it is "absent". On `t1`
+there is no node-graph runtime and no IVR navigation — the call is one prompt,
+start to finish. That simplicity is what makes ₹1 possible.
 
 ### Picking a tier
 
@@ -44,38 +49,37 @@ webhook and no summary to fetch later. That is what makes ₹1 possible.
   delivery windows, appointment reminders, OTP-adjacent notifications, "are you
   still interested?". If you can write the whole call as one prompt and it ends
   when the customer says yes or no, this is your tier.
-- **`t3`** — the call has structure (stages, rails, a handoff to a human) or you
-  need to know afterwards what happened, at scale, without listening.
+- **`t3`** — the call has structure (stages, rails, an IVR to get past) or you
+  want a premium voice with automatic fallback.
 - **`t5`** — you want to author the flow yourself, node by node, and version it
   like code. See the [Node graphs](/v2/node-graphs/) preview.
 
 ## What a minute costs
 
-Billing is **per-minute blocks, rounded up, minimum one minute.** Not per
-second.
+Billing is **per-second metering.** The per-minute rate is a price, not a
+billing block: you pay for the seconds you used, durations summed across calls.
+**No per-call minimum, no per-call rounding, no pulses.**
 
-| Call duration | Billed minutes | `t1` cost |
+| Call duration | Billed seconds | `t1` cost |
 | :--- | :--- | :--- |
-| 8 seconds | 1 | ₹1 |
-| 59 seconds | 1 | ₹1 |
-| 61 seconds | 2 | ₹2 |
-| 96 seconds | 2 | ₹2 |
-| 3 min 01 s | 4 | ₹4 |
+| 8 seconds | 8 | ₹0.13 |
+| 59 seconds | 59 | ₹0.98 |
+| 61 seconds | 61 | ₹1.02 |
+| 96 seconds | 96 | ₹1.60 |
+| 3 min 01 s | 181 | ₹3.02 |
 
-### Rounding
+### Metering
 
 `duration_secs` on the [call object](/v2/calls/#the-call-object) is the true
 media duration in seconds. The charge is
-`ceil(duration_secs / 60) × per_min_inr`, with a floor of one minute for any
-call that produced media.
+`duration_secs × per_min_inr / 60`, settled to the paisa. A call that produced
+no media costs nothing.
 
 ```python
-import math
-
 def cost_inr(duration_secs: int, per_min_inr: float) -> float:
     if duration_secs <= 0:
         return 0.0
-    return math.ceil(duration_secs / 60) * per_min_inr
+    return round(duration_secs * per_min_inr / 60, 2)
 ```
 
 You never have to compute this — `cost.amount_inr` on the call object and the
@@ -103,7 +107,7 @@ billed. A call our own pipeline broke is not.
 Take your answer rate and your mean answered-call duration:
 
 ```text
-monthly ₹ = dials × answer_rate × ceil(mean_answered_secs / 60) × rate
+monthly ₹ = dials × answer_rate × (mean_answered_secs / 60) × rate
 ```
 
 A campaign of 50,000 dials at a 35% answer rate and 80 seconds mean talk time,
@@ -111,14 +115,14 @@ on `t1`:
 
 ```text
 50,000 × 0.35 = 17,500 answered
-ceil(80 / 60)  = 2 billed minutes each
-17,500 × 2 × ₹1 = ₹35,000
+80 / 60 = 1.33 billed minutes each
+17,500 × 1.33 × ₹1 ≈ ₹23,333
 ```
 
-Unanswered dials cost nothing, so the 32,500 that rang out are free. The number
-that moves your bill is **mean answered duration crossing a minute boundary** —
-shaving a call from 61 to 58 seconds halves its cost. Prompts that cap reply
-length pay for themselves.
+Unanswered dials cost nothing, so the 32,500 that rang out are free. There are
+no minute boundaries to game — every second costs the same ₹0.0167 — so the
+only lever is **mean answered duration itself**. Prompts that cap reply length
+pay for themselves, one saved second at a time.
 
 ## Wallet
 
@@ -136,8 +140,8 @@ curl https://api.voice.miraiminds.co/v2/wallet \
 - **Debits happen at call end**, one ledger row per billable call, carrying the
   `call_id`.
 - **Top-ups are ops-issued** during the pilot. Email
-  [sneh@miraiminds.co](mailto:sneh@miraiminds.co); credit lands within minutes
-  and applies immediately.
+  [credits@miraiminds.co](mailto:credits@miraiminds.co); credit lands within
+  minutes and applies immediately.
 - **The ledger is the source of truth** for reconciliation:
   [`GET /v2/wallet/transactions`](/v2/wallet/#list-transactions).
 
@@ -215,7 +219,9 @@ you can always see which rate card a given call was billed under.
 
 Design against them if you like — the field name and the values will not change
 — but do not ship a code path that depends on them until we tell you they are
-live. Ask your account contact for current timelines.
+live. Current targets: **`t3` in August 2026, `t5` with node graphs in
+Q4 2026** — see the [roadmap](/general/roadmap/) for the full list, and ask
+your account contact to confirm before you plan a launch around them.
 
 ## For existing v1 customers
 

@@ -17,7 +17,7 @@ HTTPS URL for webhooks (ngrok is fine while you build).
 1. ### Get a key
 
    Keys are ops-issued during the pilot. Email
-   [sneh@miraiminds.co](mailto:sneh@miraiminds.co) with your company name and
+   [info@miraiminds.co](mailto:info@miraiminds.co) with your company name and
    use case. You get back three things:
 
    | | Looks like | Used for |
@@ -295,13 +295,13 @@ HTTPS URL for webhooks (ngrok is fine while you build).
          "started_at": "2026-07-26T09:15:02Z",
          "ended_at": "2026-07-26T09:16:38Z",
          "duration_secs": 96,
-         "cost": { "amount_inr": 2, "per_min_inr": 1 }
+         "cost": { "amount_inr": 1.6, "per_min_inr": 1 }
        }
      }
    }
    ```
 
-   96 seconds is billed as 2 minutes — [minutes round up](/general/tiers/#rounding).
+   96 seconds is billed as 96 seconds — ₹1.60. [Metering is per-second](/general/tiers/#metering); no rounding, no minimum.
 
 </Steps>
 

@@ -8,7 +8,7 @@ sidebar:
 ## Getting started
 
 **How do I get a key?**
-Email [sneh@miraiminds.co](mailto:sneh@miraiminds.co) with your company and use
+Email [help@miraiminds.co](mailto:help@miraiminds.co) with your company and use
 case. Keys are ops-issued during the pilot; self-serve signup is coming. You get
 a secret key, a webhook secret, and a starting wallet balance.
 
@@ -42,8 +42,10 @@ being over the ceiling never returns `429`.
 Not in v2. Inbound assistants live in [v1](/v1/).
 
 **Can I transfer a call to a human?**
-Not on `t1`. Human handoff is a `t3` feature and is
-[not live yet](/general/tiers/#feature-matrix).
+Yes — warm transfer to a human is part of every tier, see the
+[feature matrix](/general/tiers/#feature-matrix). The transfer rollout is
+completing now; see the [roadmap](/general/roadmap/) for status and ask your
+account contact to enable it on your workspace.
 
 **Can I change the prompt or variables mid-call?**
 No. `variables` are static per call. v1 had `PUT /v2/call/{callId}` for editing a
@@ -84,29 +86,32 @@ costs you nothing and drops early hang-ups.
 ## Billing
 
 **What does a call cost?**
-₹1 per minute on `t1`, rounded up to whole minutes, minimum one minute. A
-96-second call costs ₹2. See [Billing & tiers](/general/tiers/).
+₹1 per minute on `t1`, metered per second — no per-call minimum, no rounding
+to minutes, no pulses. A 96-second call costs ₹1.60; an 8-second call costs
+₹0.13. See [Billing & tiers](/general/tiers/).
 
 **Am I charged for calls that do not connect?**
 No. `no_answer`, `busy`, `failed` and `aborted` are free. `completed`,
 `voicemail` and `timeout` are billed.
 
 **Am I charged for a voicemail?**
-Yes — media went live and audio was generated. An 18-second voicemail costs one
-minute.
+Yes — media went live and audio was generated. An 18-second voicemail costs
+18 seconds: ₹0.30 at `t1`.
 
 **What happens when I run out of credit?**
 `POST /v2/calls` returns [`402 insufficient_balance`](/v2/wallet/#402-insufficient-balance)
 and nothing is dialled. Calls already in flight finish normally.
 
 **How do I top up?**
-Email ops. Self-serve top-up is not built yet. Credits land as a `credit` row in
+Email [credits@miraiminds.co](mailto:credits@miraiminds.co). Self-serve top-up
+is not built yet. Credits land as a `credit` row in
 [`GET /v2/wallet/transactions`](/v2/wallet/#list-transactions) and take effect
 immediately.
 
 **When are `t3` and `t5` available?**
 They are documented but not live. Requesting them returns
-[`501 tier_unavailable`](/v2/errors/#error-codes). See the
+[`501 tier_unavailable`](/v2/errors/#error-codes). Current targets: `t3` in
+August 2026, `t5` in Q4 2026 — see the [roadmap](/general/roadmap/) and the
 [feature matrix](/general/tiers/#feature-matrix) for what they will include.
 
 ## Webhooks
