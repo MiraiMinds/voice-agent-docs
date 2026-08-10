@@ -5,7 +5,7 @@ agents, single calls, campaigns, the do-not-call list, the wallet, and webhooks.
 
 | File | What it is |
 | --- | --- |
-| `mirai-voice-sandbox.postman_collection.json` | The collection — 7 folders, 40 requests, 73 saved example responses. |
+| `mirai-voice-sandbox.postman_collection.json` | The collection — 7 folders, 40 requests, 74 saved example responses. |
 | `sandbox.postman_environment.json` | The environment — base URL, your key, your test number. |
 
 ## Import
@@ -56,7 +56,7 @@ Per secret key, unless your account contact has provisioned you differently:
 | Contacts per campaign request | 1000 | `400 invalid_request` |
 | Page size | 20 default, 100 maximum | Clamped |
 | `system_prompt` / `first_message` | 8,000 / 500 characters | `400 invalid_request` |
-| `voice.voice_id` | `ashu` (default) or `aishe` — the whole catalogue | `400 invalid_request` |
+| `voice.voice_id` | Per tier — `ashutosh` is the default on `t3`; on `t1` the catalogue is `ashu` and `aishe` | `400 invalid_request` |
 | `variables` | 32 keys, 512 characters per value | `400 invalid_request` |
 | `analysis.prompt` | 2,000 characters | `400 invalid_request` |
 | `max_duration_secs` | 30–1800, default 300 | `400 invalid_request` |
@@ -87,10 +87,11 @@ Calls and the wallet are quoted in **rupees**: `balance_inr`, `cost_inr`,
 `budget_paise`, `spent_paise`, where **100 paise = ₹1**. So a ₹500 campaign cap
 is `"budget_paise": 50000`. Nothing mixes the two units inside one object.
 
-Billing is per minute, rounded up, one-minute minimum. Tier `t1` is ₹1/minute
-(100 paise). One minute is held from the wallet when a call is accepted and
-reconciled when it ends; calls that never connect release the hold in full and
-report `cost_inr: null`.
+Billing is per minute, rounded up, one-minute minimum. Tier `t3` — the default,
+and what every example in this collection uses — is ₹3/minute (300 paise); tier
+`t1` is ₹1/minute (100 paise) and is available on request. One minute is held
+from the wallet when a call is accepted and reconciled when it ends; calls that
+never connect release the hold in full and report `cost_inr: null`.
 
 ## Campaigns not switched on yet?
 
