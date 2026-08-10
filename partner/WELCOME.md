@@ -11,8 +11,8 @@ attach the two Postman files from this folder. Thirty seconds.
 - [ ] `{{WEBHOOK_SECRET}}` (`whsec_…`) from the same screen. It belongs to the
       workspace, not the key.
 - [ ] Wallet credited. A partner whose first call `402`s does not try a second.
-- [ ] Attach `mirai-voice-sandbox.postman_collection.json` and
-      `sandbox.postman_environment.json`.
+- [ ] (Optional) Attach the two Postman files — or skip it: they are
+      downloadable from the docs quickstart page directly.
 - [ ] Send the key over a channel you would send a password over. Not the same
       message as everything else, if you can help it.
 
