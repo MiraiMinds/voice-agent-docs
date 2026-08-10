@@ -90,7 +90,7 @@
   "item": [
     {
       "name": "0-Quickstart",
-      "description": "Nine requests, top to bottom. Run them in order with an environment selected and\nyou will have created an agent, placed one real call, checked what it cost, and\nrun a five-contact campaign end to end.\n\nEach step stores the id it created in a collection variable — `{{agent_id}}`,\n`{{call_id}}`, `{{campaign_id}}` — so the next step needs no copy-paste.\n\nBefore you start:\n\n1. Select the **Mirai Voice — Sandbox** environment.\n2. Put your `sk_live_…` secret key in the `api_key` variable.\n3. Set `test_phone` to a number you own, in E.164 (`+919876543210`). Step 2\n   rings it for real and debits your wallet.",
+      "description": "Ten requests, top to bottom. Run them in order with an environment selected and\nyou will have created an agent, placed one real call, checked what it cost, run a\nfive-contact campaign end to end, and read back what was said on the call.\n\nEach step stores the id it created in a collection variable — `{{agent_id}}`,\n`{{call_id}}`, `{{campaign_id}}` — so the next step needs no copy-paste.\n\nBefore you start:\n\n1. Select the **Mirai Voice — Sandbox** environment.\n2. Put your `sk_live_…` secret key in the `api_key` variable.\n3. Set `test_phone` to a number you own, in E.164 (`+919876543210`). Step 2\n   rings it for real and debits your wallet.",
       "item": [
         {
           "name": "1. Create an agent",
@@ -104,7 +104,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Order confirmation\",\n  \"system_prompt\": \"You are Priya from Acme Retail. Confirm order {{order_id}} with {{customer_name}}, read back the delivery address, and ask whether the slot on {{slot}} works. Speak Hindi with English product names. Keep every turn under two sentences.\",\n  \"first_message\": \"नमस्ते {{customer_name}}, मैं Acme Retail से Priya बोल रही हूँ। एक मिनट बात कर सकती हूँ?\",\n  \"voice\": {\n    \"voice_id\": \"ashu\",\n    \"language\": \"hi-IN\"\n  },\n  \"language\": \"hi-IN\",\n  \"max_duration_secs\": 300,\n  \"end_call\": {\n    \"enabled\": true,\n    \"message\": \"धन्यवाद, आपका दिन शुभ हो।\",\n    \"confirm\": true\n  },\n  \"voicemail\": {\n    \"action\": \"hangup\",\n    \"message\": \"\"\n  }\n}",
+              "raw": "{\n  \"name\": \"Order confirmation\",\n  \"system_prompt\": \"You are Priya from Acme Retail. Confirm order {{order_id}} with {{customer_name}}, read back the delivery address, and ask whether the slot on {{slot}} works. Speak Hindi with English product names. Keep every turn under two sentences.\",\n  \"first_message\": \"नमस्ते {{customer_name}}, मैं Acme Retail से Priya बोल रही हूँ। एक मिनट बात कर सकती हूँ?\",\n  \"voice\": {\n    \"voice_id\": \"ashu\",\n    \"language\": \"hi-IN\"\n  },\n  \"language\": \"hi-IN\",\n  \"max_duration_secs\": 300,\n  \"end_call\": {\n    \"enabled\": true,\n    \"message\": \"धन्यवाद, आपका दिन शुभ हो।\",\n    \"confirm\": true\n  },\n  \"voicemail\": {\n    \"action\": \"hangup\",\n    \"message\": \"\"\n  },\n  \"analysis\": {\n    \"enabled\": true,\n    \"prompt\": \"Did the customer accept the delivery slot? Put the slot they agreed to in `slot_confirmed`, and any new address they gave in `address`.\"\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -136,7 +136,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"name\": \"Order confirmation\",\n  \"system_prompt\": \"You are Priya from Acme Retail. Confirm order {{order_id}} with {{customer_name}}, read back the delivery address, and ask whether the slot on {{slot}} works. Speak Hindi with English product names. Keep every turn under two sentences.\",\n  \"first_message\": \"नमस्ते {{customer_name}}, मैं Acme Retail से Priya बोल रही हूँ। एक मिनट बात कर सकती हूँ?\",\n  \"voice\": {\n    \"voice_id\": \"ashu\",\n    \"language\": \"hi-IN\"\n  },\n  \"language\": \"hi-IN\",\n  \"max_duration_secs\": 300,\n  \"end_call\": {\n    \"enabled\": true,\n    \"message\": \"धन्यवाद, आपका दिन शुभ हो।\",\n    \"confirm\": true\n  },\n  \"voicemail\": {\n    \"action\": \"hangup\",\n    \"message\": \"\"\n  }\n}",
+                  "raw": "{\n  \"name\": \"Order confirmation\",\n  \"system_prompt\": \"You are Priya from Acme Retail. Confirm order {{order_id}} with {{customer_name}}, read back the delivery address, and ask whether the slot on {{slot}} works. Speak Hindi with English product names. Keep every turn under two sentences.\",\n  \"first_message\": \"नमस्ते {{customer_name}}, मैं Acme Retail से Priya बोल रही हूँ। एक मिनट बात कर सकती हूँ?\",\n  \"voice\": {\n    \"voice_id\": \"ashu\",\n    \"language\": \"hi-IN\"\n  },\n  \"language\": \"hi-IN\",\n  \"max_duration_secs\": 300,\n  \"end_call\": {\n    \"enabled\": true,\n    \"message\": \"धन्यवाद, आपका दिन शुभ हो।\",\n    \"confirm\": true\n  },\n  \"voicemail\": {\n    \"action\": \"hangup\",\n    \"message\": \"\"\n  },\n  \"analysis\": {\n    \"enabled\": true,\n    \"prompt\": \"Did the customer accept the delivery slot? Put the slot they agreed to in `slot_confirmed`, and any new address they gave in `address`.\"\n  }\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -164,7 +164,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n  \"object\": \"agent\",\n  \"name\": \"Order confirmation\",\n  \"system_prompt\": \"You are Priya from Acme Retail. Confirm order {{order_id}} with {{customer_name}}, read back the delivery address, and ask whether the slot on {{slot}} works. Speak Hindi with English product names. Keep every turn under two sentences.\",\n  \"first_message\": \"नमस्ते {{customer_name}}, मैं Acme Retail से Priya बोल रही हूँ। एक मिनट बात कर सकती हूँ?\",\n  \"voice\": {\n    \"voice_id\": \"ashu\",\n    \"language\": \"hi-IN\"\n  },\n  \"language\": \"hi-IN\",\n  \"max_duration_secs\": 300,\n  \"end_call\": {\n    \"enabled\": true,\n    \"message\": \"धन्यवाद, आपका दिन शुभ हो।\",\n    \"confirm\": true\n  },\n  \"voicemail\": {\n    \"action\": \"hangup\",\n    \"message\": \"\"\n  },\n  \"created_at\": \"2026-08-10T09:14:02Z\",\n  \"updated_at\": \"2026-08-10T09:14:02Z\"\n}"
+              "body": "{\n  \"id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n  \"object\": \"agent\",\n  \"name\": \"Order confirmation\",\n  \"system_prompt\": \"You are Priya from Acme Retail. Confirm order {{order_id}} with {{customer_name}}, read back the delivery address, and ask whether the slot on {{slot}} works. Speak Hindi with English product names. Keep every turn under two sentences.\",\n  \"first_message\": \"नमस्ते {{customer_name}}, मैं Acme Retail से Priya बोल रही हूँ। एक मिनट बात कर सकती हूँ?\",\n  \"voice\": {\n    \"voice_id\": \"ashu\",\n    \"language\": \"hi-IN\"\n  },\n  \"language\": \"hi-IN\",\n  \"max_duration_secs\": 300,\n  \"end_call\": {\n    \"enabled\": true,\n    \"message\": \"धन्यवाद, आपका दिन शुभ हो।\",\n    \"confirm\": true\n  },\n  \"voicemail\": {\n    \"action\": \"hangup\",\n    \"message\": \"\"\n  },\n  \"analysis\": {\n    \"enabled\": true,\n    \"prompt\": \"Did the customer accept the delivery slot? Put the slot they agreed to in `slot_confirmed`, and any new address they gave in `address`.\"\n  },\n  \"created_at\": \"2026-08-10T09:14:02Z\",\n  \"updated_at\": \"2026-08-10T09:14:02Z\"\n}"
             }
           ],
           "event": [
@@ -389,7 +389,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"call_01K7Q9B4M8N3P6R2S5T7V9W1YA\",\n  \"object\": \"call\",\n  \"agent_id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n  \"to\": \"+919876543210\",\n  \"status\": \"completed\",\n  \"tier\": \"t1\",\n  \"ended_reason\": \"customer-ended-call\",\n  \"duration_secs\": 96,\n  \"cost_inr\": 2,\n  \"created_at\": \"2026-08-10T09:15:00Z\",\n  \"started_at\": \"2026-08-10T09:15:02Z\",\n  \"ended_at\": \"2026-08-10T09:16:38Z\"\n}"
+              "body": "{\n  \"id\": \"call_01K7Q9B4M8N3P6R2S5T7V9W1YA\",\n  \"object\": \"call\",\n  \"agent_id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n  \"to\": \"+919876543210\",\n  \"status\": \"completed\",\n  \"tier\": \"t1\",\n  \"ended_reason\": \"customer-ended-call\",\n  \"duration_secs\": 96,\n  \"cost_inr\": 2,\n  \"created_at\": \"2026-08-10T09:15:00Z\",\n  \"started_at\": \"2026-08-10T09:15:02Z\",\n  \"ended_at\": \"2026-08-10T09:16:38Z\",\n  \"recording_available\": true,\n  \"transcript_available\": true,\n  \"analysis\": {\n    \"summary\": \"Rohit ne order AC-88213 ki delivery confirm kar di. Kal shaam 6 baje ka slot theek hai, thoda late ho to bhi chalega. Koi complaint nahi.\",\n    \"success\": true,\n    \"data\": {\n      \"slot_confirmed\": \"कल शाम 6 बजे\",\n      \"address\": null\n    }\n  }\n}"
             }
           ],
           "event": [
@@ -475,7 +475,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"data\": [\n    {\n      \"id\": \"call_01K7Q9B4M8N3P6R2S5T7V9W1YA\",\n      \"object\": \"call\",\n      \"agent_id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n      \"to\": \"+919876543210\",\n      \"status\": \"completed\",\n      \"tier\": \"t1\",\n      \"ended_reason\": \"customer-ended-call\",\n      \"duration_secs\": 96,\n      \"cost_inr\": 2,\n      \"created_at\": \"2026-08-10T09:15:00Z\",\n      \"started_at\": \"2026-08-10T09:15:02Z\",\n      \"ended_at\": \"2026-08-10T09:16:38Z\"\n    },\n    {\n      \"id\": \"call_01K7Q9B4M8N3P6R2S5T7V9W1YB\",\n      \"object\": \"call\",\n      \"agent_id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n      \"to\": \"+919876543211\",\n      \"status\": \"in_progress\",\n      \"tier\": \"t1\",\n      \"ended_reason\": null,\n      \"duration_secs\": null,\n      \"cost_inr\": null,\n      \"created_at\": \"2026-08-10T09:20:01Z\",\n      \"started_at\": \"2026-08-10T09:20:09Z\",\n      \"ended_at\": null\n    }\n  ],\n  \"has_more\": false,\n  \"next_cursor\": null\n}"
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"call_01K7Q9B4M8N3P6R2S5T7V9W1YA\",\n      \"object\": \"call\",\n      \"agent_id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n      \"to\": \"+919876543210\",\n      \"status\": \"completed\",\n      \"tier\": \"t1\",\n      \"ended_reason\": \"customer-ended-call\",\n      \"duration_secs\": 96,\n      \"cost_inr\": 2,\n      \"created_at\": \"2026-08-10T09:15:00Z\",\n      \"started_at\": \"2026-08-10T09:15:02Z\",\n      \"ended_at\": \"2026-08-10T09:16:38Z\",\n      \"recording_available\": true,\n      \"transcript_available\": true,\n      \"analysis\": {\n        \"summary\": \"Rohit ne order AC-88213 ki delivery confirm kar di. Kal shaam 6 baje ka slot theek hai, thoda late ho to bhi chalega. Koi complaint nahi.\",\n        \"success\": true,\n        \"data\": {\n          \"slot_confirmed\": \"कल शाम 6 बजे\",\n          \"address\": null\n        }\n      }\n    },\n    {\n      \"id\": \"call_01K7Q9B4M8N3P6R2S5T7V9W1YB\",\n      \"object\": \"call\",\n      \"agent_id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n      \"to\": \"+919876543211\",\n      \"status\": \"in_progress\",\n      \"tier\": \"t1\",\n      \"ended_reason\": null,\n      \"duration_secs\": null,\n      \"cost_inr\": null,\n      \"created_at\": \"2026-08-10T09:20:01Z\",\n      \"started_at\": \"2026-08-10T09:20:09Z\",\n      \"ended_at\": null,\n      \"recording_available\": false,\n      \"transcript_available\": false,\n      \"analysis\": null\n    }\n  ],\n  \"has_more\": false,\n  \"next_cursor\": null\n}"
             }
           ],
           "event": [
@@ -893,12 +893,109 @@
               }
             }
           ]
+        },
+        {
+          "name": "10. Read the transcript",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v2/calls/{{call_id}}/transcript",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v2",
+                "calls",
+                "{{call_id}}",
+                "transcript"
+              ]
+            },
+            "description": "What was actually said on the call from step 2, turn by turn.\n\nThis is the point of the whole walkthrough: you now have a call you can read, audio you can play (**Get recording**), and — if the agent was created with `analysis.enabled` — a summary on the call object itself.\n\n**404** here means the call has not ended yet, or nobody spoke. Poll step 3 until `transcript_available` is `true`."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/v2/calls/call_01K7Q9B4M8N3P6R2S5T7V9W1YA/transcript",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "v2",
+                    "calls",
+                    "call_01K7Q9B4M8N3P6R2S5T7V9W1YA",
+                    "transcript"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"call_id\": \"call_01K7Q9B4M8N3P6R2S5T7V9W1YA\",\n  \"turns\": [\n    {\n      \"role\": \"assistant\",\n      \"text\": \"नमस्ते Rohit जी, मैं Acme Retail से Priya बोल रही हूँ। एक मिनट बात कर सकती हूँ?\",\n      \"start_ms\": 420,\n      \"end_ms\": 4980\n    },\n    {\n      \"role\": \"user\",\n      \"text\": \"हाँ बोलिए\",\n      \"start_ms\": 5640,\n      \"end_ms\": 6390\n    },\n    {\n      \"role\": \"assistant\",\n      \"text\": \"आपका order AC-88213 kal shaam 6 baje deliver hoga, Flat 402 Sunrise Apartments Andheri West. Ye slot theek hai?\",\n      \"start_ms\": 7010,\n      \"end_ms\": 14880\n    },\n    {\n      \"role\": \"user\",\n      \"text\": \"haan theek hai, lekin thoda late aaye to chalega\",\n      \"start_ms\": 15900,\n      \"end_ms\": 19240\n    },\n    {\n      \"role\": \"assistant\",\n      \"text\": \"बिल्कुल, हम delivery partner ko note kar denge. Aur koi help chahiye?\",\n      \"start_ms\": 19960,\n      \"end_ms\": 24110\n    },\n    {\n      \"role\": \"user\",\n      \"text\": \"nahi bas itna hi, thank you\",\n      \"start_ms\": 25020,\n      \"end_ms\": 26980\n    },\n    {\n      \"role\": \"assistant\",\n      \"text\": \"धन्यवाद Rohit जी, आपका दिन शुभ हो।\",\n      \"start_ms\": 27600,\n      \"end_ms\": 30640\n    }\n  ]\n}"
+            },
+            {
+              "name": "404 Call has not ended yet",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/v2/calls/call_01K7Q9B4M8N3P6R2S5T7V9W1YB/transcript",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "v2",
+                    "calls",
+                    "call_01K7Q9B4M8N3P6R2S5T7V9W1YB",
+                    "transcript"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"code\": \"not_found\",\n    \"message\": \"transcript not available (call still in progress or produced no speech)\"\n  }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const t = pm.response.json();",
+                  "pm.test(\"turns are assistant/user only\", () =>",
+                  "  t.turns.forEach((x) => pm.expect([\"assistant\", \"user\"]).to.include(x.role)));",
+                  "t.turns.forEach((x) => console.log(`${(x.start_ms / 1000).toFixed(1)}s ${x.role}: ${x.text}`));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
     {
       "name": "Agents",
-      "description": "An agent is a reusable configuration: prompt, opening line, voice, language and\ncall limits. Calls and campaigns reference one by id.\n\nCeilings enforced on create and update: `system_prompt` 8,000 characters,\n`first_message` 500 characters, `max_duration_secs` 30–1800 (default 300).\n\n`voice` is an **object** — `\"voice\": \"ashu\"` is rejected — and\n`voice.voice_id` is a slug from a catalogue of exactly two: `ashu` (the\ndefault) and `aishe`. Any other slug is refused at write time with\n**400 `invalid_request`**, rather than failing inside the synthesiser with\nthe customer already on the line.\n\n**About `{{customer_name}}` in the prompts below.** Those are *agent* placeholders,\nfilled by the platform from each call's `variables` — they are not Postman\nvariables. Postman leaves an undefined `{{…}}` untouched, so they reach the API\nintact. Just do not define a Postman variable with the same name, or Postman will\nsubstitute it before we ever see it.",
+      "description": "An agent is a reusable configuration: prompt, opening line, voice, language and\ncall limits. Calls and campaigns reference one by id.\n\nCeilings enforced on create and update: `system_prompt` 8,000 characters,\n`first_message` 500 characters, `max_duration_secs` 30–1800 (default 300).\n\n`voice` is an **object** — `\"voice\": \"ashu\"` is rejected — and\n`voice.voice_id` is a slug from a catalogue of exactly two: `ashu` (the\ndefault) and `aishe`. Any other slug is refused at write time with\n**400 `invalid_request`**, rather than failing inside the synthesiser with\nthe customer already on the line.\n\n**About `{{customer_name}}` in the prompts below.** Those are *agent* placeholders,\nfilled by the platform from each call's `variables` — they are not Postman\nvariables. Postman leaves an undefined `{{…}}` untouched, so they reach the API\nintact. Just do not define a Postman variable with the same name, or Postman will\nsubstitute it before we ever see it.\n\n**`analysis`** is optional and off unless you ask for it. With\n`{\"enabled\": true}` every call this agent runs is read once after it ends and\nthe call object gains `{summary, success, data}`. Add `analysis.prompt`\n(up to 2,000 characters) to say what you want pulled out of the conversation —\nthe answer lands in `analysis.data`. Analysis never delays a call, never\ndelays its webhook, and a failure leaves `analysis: null` rather than\nretrying.",
       "item": [
         {
           "name": "Create agent",
@@ -912,7 +1009,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Order confirmation\",\n  \"system_prompt\": \"You are Priya from Acme Retail. Confirm order {{order_id}} with {{customer_name}}, read back the delivery address, and ask whether the slot on {{slot}} works. Speak Hindi with English product names. Keep every turn under two sentences.\",\n  \"first_message\": \"नमस्ते {{customer_name}}, मैं Acme Retail से Priya बोल रही हूँ। एक मिनट बात कर सकती हूँ?\",\n  \"voice\": {\n    \"voice_id\": \"ashu\",\n    \"language\": \"hi-IN\"\n  },\n  \"language\": \"hi-IN\",\n  \"max_duration_secs\": 300,\n  \"end_call\": {\n    \"enabled\": true,\n    \"message\": \"धन्यवाद, आपका दिन शुभ हो।\",\n    \"confirm\": true\n  },\n  \"voicemail\": {\n    \"action\": \"hangup\",\n    \"message\": \"\"\n  }\n}",
+              "raw": "{\n  \"name\": \"Order confirmation\",\n  \"system_prompt\": \"You are Priya from Acme Retail. Confirm order {{order_id}} with {{customer_name}}, read back the delivery address, and ask whether the slot on {{slot}} works. Speak Hindi with English product names. Keep every turn under two sentences.\",\n  \"first_message\": \"नमस्ते {{customer_name}}, मैं Acme Retail से Priya बोल रही हूँ। एक मिनट बात कर सकती हूँ?\",\n  \"voice\": {\n    \"voice_id\": \"ashu\",\n    \"language\": \"hi-IN\"\n  },\n  \"language\": \"hi-IN\",\n  \"max_duration_secs\": 300,\n  \"end_call\": {\n    \"enabled\": true,\n    \"message\": \"धन्यवाद, आपका दिन शुभ हो।\",\n    \"confirm\": true\n  },\n  \"voicemail\": {\n    \"action\": \"hangup\",\n    \"message\": \"\"\n  },\n  \"analysis\": {\n    \"enabled\": true,\n    \"prompt\": \"Did the customer accept the delivery slot? Put the slot they agreed to in `slot_confirmed`, and any new address they gave in `address`.\"\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -944,7 +1041,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"name\": \"Order confirmation\",\n  \"system_prompt\": \"You are Priya from Acme Retail. Confirm order {{order_id}} with {{customer_name}}, read back the delivery address, and ask whether the slot on {{slot}} works. Speak Hindi with English product names. Keep every turn under two sentences.\",\n  \"first_message\": \"नमस्ते {{customer_name}}, मैं Acme Retail से Priya बोल रही हूँ। एक मिनट बात कर सकती हूँ?\",\n  \"voice\": {\n    \"voice_id\": \"ashu\",\n    \"language\": \"hi-IN\"\n  },\n  \"language\": \"hi-IN\",\n  \"max_duration_secs\": 300,\n  \"end_call\": {\n    \"enabled\": true,\n    \"message\": \"धन्यवाद, आपका दिन शुभ हो।\",\n    \"confirm\": true\n  },\n  \"voicemail\": {\n    \"action\": \"hangup\",\n    \"message\": \"\"\n  }\n}",
+                  "raw": "{\n  \"name\": \"Order confirmation\",\n  \"system_prompt\": \"You are Priya from Acme Retail. Confirm order {{order_id}} with {{customer_name}}, read back the delivery address, and ask whether the slot on {{slot}} works. Speak Hindi with English product names. Keep every turn under two sentences.\",\n  \"first_message\": \"नमस्ते {{customer_name}}, मैं Acme Retail से Priya बोल रही हूँ। एक मिनट बात कर सकती हूँ?\",\n  \"voice\": {\n    \"voice_id\": \"ashu\",\n    \"language\": \"hi-IN\"\n  },\n  \"language\": \"hi-IN\",\n  \"max_duration_secs\": 300,\n  \"end_call\": {\n    \"enabled\": true,\n    \"message\": \"धन्यवाद, आपका दिन शुभ हो।\",\n    \"confirm\": true\n  },\n  \"voicemail\": {\n    \"action\": \"hangup\",\n    \"message\": \"\"\n  },\n  \"analysis\": {\n    \"enabled\": true,\n    \"prompt\": \"Did the customer accept the delivery slot? Put the slot they agreed to in `slot_confirmed`, and any new address they gave in `address`.\"\n  }\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -972,7 +1069,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n  \"object\": \"agent\",\n  \"name\": \"Order confirmation\",\n  \"system_prompt\": \"You are Priya from Acme Retail. Confirm order {{order_id}} with {{customer_name}}, read back the delivery address, and ask whether the slot on {{slot}} works. Speak Hindi with English product names. Keep every turn under two sentences.\",\n  \"first_message\": \"नमस्ते {{customer_name}}, मैं Acme Retail से Priya बोल रही हूँ। एक मिनट बात कर सकती हूँ?\",\n  \"voice\": {\n    \"voice_id\": \"ashu\",\n    \"language\": \"hi-IN\"\n  },\n  \"language\": \"hi-IN\",\n  \"max_duration_secs\": 300,\n  \"end_call\": {\n    \"enabled\": true,\n    \"message\": \"धन्यवाद, आपका दिन शुभ हो।\",\n    \"confirm\": true\n  },\n  \"voicemail\": {\n    \"action\": \"hangup\",\n    \"message\": \"\"\n  },\n  \"created_at\": \"2026-08-10T09:14:02Z\",\n  \"updated_at\": \"2026-08-10T09:14:02Z\"\n}"
+              "body": "{\n  \"id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n  \"object\": \"agent\",\n  \"name\": \"Order confirmation\",\n  \"system_prompt\": \"You are Priya from Acme Retail. Confirm order {{order_id}} with {{customer_name}}, read back the delivery address, and ask whether the slot on {{slot}} works. Speak Hindi with English product names. Keep every turn under two sentences.\",\n  \"first_message\": \"नमस्ते {{customer_name}}, मैं Acme Retail से Priya बोल रही हूँ। एक मिनट बात कर सकती हूँ?\",\n  \"voice\": {\n    \"voice_id\": \"ashu\",\n    \"language\": \"hi-IN\"\n  },\n  \"language\": \"hi-IN\",\n  \"max_duration_secs\": 300,\n  \"end_call\": {\n    \"enabled\": true,\n    \"message\": \"धन्यवाद, आपका दिन शुभ हो।\",\n    \"confirm\": true\n  },\n  \"voicemail\": {\n    \"action\": \"hangup\",\n    \"message\": \"\"\n  },\n  \"analysis\": {\n    \"enabled\": true,\n    \"prompt\": \"Did the customer accept the delivery slot? Put the slot they agreed to in `slot_confirmed`, and any new address they gave in `address`.\"\n  },\n  \"created_at\": \"2026-08-10T09:14:02Z\",\n  \"updated_at\": \"2026-08-10T09:14:02Z\"\n}"
             },
             {
               "name": "400 Missing field",
@@ -1028,7 +1125,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"name\": \"Order confirmation\",\n  \"system_prompt\": \"You are Priya from Acme Retail. Confirm order {{order_id}} with {{customer_name}}, read back the delivery address, and ask whether the slot on {{slot}} works. Speak Hindi with English product names. Keep every turn under two sentences.\",\n  \"first_message\": \"नमस्ते {{customer_name}}, मैं Acme Retail से Priya बोल रही हूँ। एक मिनट बात कर सकती हूँ?\",\n  \"voice\": {\n    \"voice_id\": \"ashu\",\n    \"language\": \"hi-IN\"\n  },\n  \"language\": \"hi-IN\",\n  \"max_duration_secs\": 300,\n  \"end_call\": {\n    \"enabled\": true,\n    \"message\": \"धन्यवाद, आपका दिन शुभ हो।\",\n    \"confirm\": true\n  },\n  \"voicemail\": {\n    \"action\": \"hangup\",\n    \"message\": \"\"\n  }\n}",
+                  "raw": "{\n  \"name\": \"Order confirmation\",\n  \"system_prompt\": \"You are Priya from Acme Retail. Confirm order {{order_id}} with {{customer_name}}, read back the delivery address, and ask whether the slot on {{slot}} works. Speak Hindi with English product names. Keep every turn under two sentences.\",\n  \"first_message\": \"नमस्ते {{customer_name}}, मैं Acme Retail से Priya बोल रही हूँ। एक मिनट बात कर सकती हूँ?\",\n  \"voice\": {\n    \"voice_id\": \"ashu\",\n    \"language\": \"hi-IN\"\n  },\n  \"language\": \"hi-IN\",\n  \"max_duration_secs\": 300,\n  \"end_call\": {\n    \"enabled\": true,\n    \"message\": \"धन्यवाद, आपका दिन शुभ हो।\",\n    \"confirm\": true\n  },\n  \"voicemail\": {\n    \"action\": \"hangup\",\n    \"message\": \"\"\n  },\n  \"analysis\": {\n    \"enabled\": true,\n    \"prompt\": \"Did the customer accept the delivery slot? Put the slot they agreed to in `slot_confirmed`, and any new address they gave in `address`.\"\n  }\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -1135,7 +1232,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"data\": [\n    {\n      \"id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n      \"object\": \"agent\",\n      \"name\": \"Order confirmation\",\n      \"system_prompt\": \"You are Priya from Acme Retail. Confirm order {{order_id}} with {{customer_name}}, read back the delivery address, and ask whether the slot on {{slot}} works. Speak Hindi with English product names. Keep every turn under two sentences.\",\n      \"first_message\": \"नमस्ते {{customer_name}}, मैं Acme Retail से Priya बोल रही हूँ। एक मिनट बात कर सकती हूँ?\",\n      \"voice\": {\n        \"voice_id\": \"ashu\",\n        \"language\": \"hi-IN\"\n      },\n      \"language\": \"hi-IN\",\n      \"max_duration_secs\": 300,\n      \"end_call\": {\n        \"enabled\": true,\n        \"message\": \"धन्यवाद, आपका दिन शुभ हो।\",\n        \"confirm\": true\n      },\n      \"voicemail\": {\n        \"action\": \"hangup\",\n        \"message\": \"\"\n      },\n      \"created_at\": \"2026-08-10T09:14:02Z\",\n      \"updated_at\": \"2026-08-10T09:14:02Z\"\n    }\n  ],\n  \"has_more\": false,\n  \"next_cursor\": null\n}"
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n      \"object\": \"agent\",\n      \"name\": \"Order confirmation\",\n      \"system_prompt\": \"You are Priya from Acme Retail. Confirm order {{order_id}} with {{customer_name}}, read back the delivery address, and ask whether the slot on {{slot}} works. Speak Hindi with English product names. Keep every turn under two sentences.\",\n      \"first_message\": \"नमस्ते {{customer_name}}, मैं Acme Retail से Priya बोल रही हूँ। एक मिनट बात कर सकती हूँ?\",\n      \"voice\": {\n        \"voice_id\": \"ashu\",\n        \"language\": \"hi-IN\"\n      },\n      \"language\": \"hi-IN\",\n      \"max_duration_secs\": 300,\n      \"end_call\": {\n        \"enabled\": true,\n        \"message\": \"धन्यवाद, आपका दिन शुभ हो।\",\n        \"confirm\": true\n      },\n      \"voicemail\": {\n        \"action\": \"hangup\",\n        \"message\": \"\"\n      },\n      \"analysis\": {\n        \"enabled\": true,\n        \"prompt\": \"Did the customer accept the delivery slot? Put the slot they agreed to in `slot_confirmed`, and any new address they gave in `address`.\"\n      },\n      \"created_at\": \"2026-08-10T09:14:02Z\",\n      \"updated_at\": \"2026-08-10T09:14:02Z\"\n    }\n  ],\n  \"has_more\": false,\n  \"next_cursor\": null\n}"
             }
           ]
         },
@@ -1185,7 +1282,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n  \"object\": \"agent\",\n  \"name\": \"Order confirmation\",\n  \"system_prompt\": \"You are Priya from Acme Retail. Confirm order {{order_id}} with {{customer_name}}, read back the delivery address, and ask whether the slot on {{slot}} works. Speak Hindi with English product names. Keep every turn under two sentences.\",\n  \"first_message\": \"नमस्ते {{customer_name}}, मैं Acme Retail से Priya बोल रही हूँ। एक मिनट बात कर सकती हूँ?\",\n  \"voice\": {\n    \"voice_id\": \"ashu\",\n    \"language\": \"hi-IN\"\n  },\n  \"language\": \"hi-IN\",\n  \"max_duration_secs\": 300,\n  \"end_call\": {\n    \"enabled\": true,\n    \"message\": \"धन्यवाद, आपका दिन शुभ हो।\",\n    \"confirm\": true\n  },\n  \"voicemail\": {\n    \"action\": \"hangup\",\n    \"message\": \"\"\n  },\n  \"created_at\": \"2026-08-10T09:14:02Z\",\n  \"updated_at\": \"2026-08-10T09:14:02Z\"\n}"
+              "body": "{\n  \"id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n  \"object\": \"agent\",\n  \"name\": \"Order confirmation\",\n  \"system_prompt\": \"You are Priya from Acme Retail. Confirm order {{order_id}} with {{customer_name}}, read back the delivery address, and ask whether the slot on {{slot}} works. Speak Hindi with English product names. Keep every turn under two sentences.\",\n  \"first_message\": \"नमस्ते {{customer_name}}, मैं Acme Retail से Priya बोल रही हूँ। एक मिनट बात कर सकती हूँ?\",\n  \"voice\": {\n    \"voice_id\": \"ashu\",\n    \"language\": \"hi-IN\"\n  },\n  \"language\": \"hi-IN\",\n  \"max_duration_secs\": 300,\n  \"end_call\": {\n    \"enabled\": true,\n    \"message\": \"धन्यवाद, आपका दिन शुभ हो।\",\n    \"confirm\": true\n  },\n  \"voicemail\": {\n    \"action\": \"hangup\",\n    \"message\": \"\"\n  },\n  \"analysis\": {\n    \"enabled\": true,\n    \"prompt\": \"Did the customer accept the delivery slot? Put the slot they agreed to in `slot_confirmed`, and any new address they gave in `address`.\"\n  },\n  \"created_at\": \"2026-08-10T09:14:02Z\",\n  \"updated_at\": \"2026-08-10T09:14:02Z\"\n}"
             },
             {
               "name": "404 Not found",
@@ -1292,7 +1389,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n  \"object\": \"agent\",\n  \"name\": \"Order confirmation\",\n  \"system_prompt\": \"You are Priya from Acme Retail. Confirm order {{order_id}} with {{customer_name}}, read back the delivery address, and ask whether the slot on {{slot}} works. Speak Hindi with English product names. Keep every turn under two sentences.\",\n  \"first_message\": \"नमस्ते {{customer_name}}, मैं Acme Retail से Priya बोल रही हूँ। एक मिनट बात कर सकती हूँ?\",\n  \"voice\": {\n    \"voice_id\": \"aishe\",\n    \"language\": \"hi-IN\"\n  },\n  \"language\": \"hi-IN\",\n  \"max_duration_secs\": 240,\n  \"end_call\": {\n    \"enabled\": true,\n    \"message\": \"धन्यवाद, आपका दिन शुभ हो।\",\n    \"confirm\": true\n  },\n  \"voicemail\": {\n    \"action\": \"hangup\",\n    \"message\": \"\"\n  },\n  \"created_at\": \"2026-08-10T09:14:02Z\",\n  \"updated_at\": \"2026-08-10T11:02:19Z\"\n}"
+              "body": "{\n  \"id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n  \"object\": \"agent\",\n  \"name\": \"Order confirmation\",\n  \"system_prompt\": \"You are Priya from Acme Retail. Confirm order {{order_id}} with {{customer_name}}, read back the delivery address, and ask whether the slot on {{slot}} works. Speak Hindi with English product names. Keep every turn under two sentences.\",\n  \"first_message\": \"नमस्ते {{customer_name}}, मैं Acme Retail से Priya बोल रही हूँ। एक मिनट बात कर सकती हूँ?\",\n  \"voice\": {\n    \"voice_id\": \"aishe\",\n    \"language\": \"hi-IN\"\n  },\n  \"language\": \"hi-IN\",\n  \"max_duration_secs\": 240,\n  \"end_call\": {\n    \"enabled\": true,\n    \"message\": \"धन्यवाद, आपका दिन शुभ हो।\",\n    \"confirm\": true\n  },\n  \"voicemail\": {\n    \"action\": \"hangup\",\n    \"message\": \"\"\n  },\n  \"analysis\": {\n    \"enabled\": true,\n    \"prompt\": \"Did the customer accept the delivery slot? Put the slot they agreed to in `slot_confirmed`, and any new address they gave in `address`.\"\n  },\n  \"created_at\": \"2026-08-10T09:14:02Z\",\n  \"updated_at\": \"2026-08-10T11:02:19Z\"\n}"
             }
           ]
         },
@@ -1354,7 +1451,7 @@
     },
     {
       "name": "Calls",
-      "description": "One outbound call. `POST /v2/calls` answers **202 Accepted** — the request was\naccepted, the phone has not rung yet.\n\n**Money.** Rates are per minute, rounded up, one-minute minimum. Tier `t1` is\n₹1/minute (100 paise). One minute is held from the wallet when the call is\naccepted and reconciled against the real duration when it ends; unbilled endings\n(`no_answer`, `busy`, `failed`, an abort before answer) release the hold in\nfull and report `cost_inr: null`.\n\n**Statuses.** `queued` → `dialing` → `in_progress` → one of `completed`,\n`voicemail`, `no_answer`, `busy`, `failed`, `timeout`, `aborted`. Terminal\nstatuses never change.\n\n**Phone numbers** are E.164 with the country code: `+919876543210`.",
+      "description": "One outbound call. `POST /v2/calls` answers **202 Accepted** — the request was\naccepted, the phone has not rung yet.\n\n**Money.** Rates are per minute, rounded up, one-minute minimum. Tier `t1` is\n₹1/minute (100 paise). One minute is held from the wallet when the call is\naccepted and reconciled against the real duration when it ends; unbilled endings\n(`no_answer`, `busy`, `failed`, an abort before answer) release the hold in\nfull and report `cost_inr: null`.\n\n**Statuses.** `queued` → `dialing` → `in_progress` → one of `completed`,\n`voicemail`, `no_answer`, `busy`, `failed`, `timeout`, `aborted`. Terminal\nstatuses never change.\n\n**Phone numbers** are E.164 with the country code: `+919876543210`.\n\n**After the call.** Every ended call carries `recording_available` and\n`transcript_available`. When they are true, `GET /v2/calls/{id}/transcript`\nreturns the turns and `GET /v2/calls/{id}/recording` redirects to a signed\n15-minute URL for the audio. Both are kept for 90 days. Agents created with\n`analysis.enabled` also get an `analysis` object on the call — a summary, a\nsuccess flag, and whatever you asked for in `analysis.prompt`.",
       "item": [
         {
           "name": "Create call",
@@ -1777,7 +1874,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"data\": [\n    {\n      \"id\": \"call_01K7Q9B4M8N3P6R2S5T7V9W1YB\",\n      \"object\": \"call\",\n      \"agent_id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n      \"to\": \"+919876543211\",\n      \"status\": \"in_progress\",\n      \"tier\": \"t1\",\n      \"ended_reason\": null,\n      \"duration_secs\": null,\n      \"cost_inr\": null,\n      \"created_at\": \"2026-08-10T09:20:01Z\",\n      \"started_at\": \"2026-08-10T09:20:09Z\",\n      \"ended_at\": null\n    },\n    {\n      \"id\": \"call_01K7Q9B4M8N3P6R2S5T7V9W1YA\",\n      \"object\": \"call\",\n      \"agent_id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n      \"to\": \"+919876543210\",\n      \"status\": \"completed\",\n      \"tier\": \"t1\",\n      \"ended_reason\": \"customer-ended-call\",\n      \"duration_secs\": 96,\n      \"cost_inr\": 2,\n      \"created_at\": \"2026-08-10T09:15:00Z\",\n      \"started_at\": \"2026-08-10T09:15:02Z\",\n      \"ended_at\": \"2026-08-10T09:16:38Z\"\n    }\n  ],\n  \"has_more\": false,\n  \"next_cursor\": null\n}"
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"call_01K7Q9B4M8N3P6R2S5T7V9W1YB\",\n      \"object\": \"call\",\n      \"agent_id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n      \"to\": \"+919876543211\",\n      \"status\": \"in_progress\",\n      \"tier\": \"t1\",\n      \"ended_reason\": null,\n      \"duration_secs\": null,\n      \"cost_inr\": null,\n      \"created_at\": \"2026-08-10T09:20:01Z\",\n      \"started_at\": \"2026-08-10T09:20:09Z\",\n      \"ended_at\": null,\n      \"recording_available\": false,\n      \"transcript_available\": false,\n      \"analysis\": null\n    },\n    {\n      \"id\": \"call_01K7Q9B4M8N3P6R2S5T7V9W1YA\",\n      \"object\": \"call\",\n      \"agent_id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n      \"to\": \"+919876543210\",\n      \"status\": \"completed\",\n      \"tier\": \"t1\",\n      \"ended_reason\": \"customer-ended-call\",\n      \"duration_secs\": 96,\n      \"cost_inr\": 2,\n      \"created_at\": \"2026-08-10T09:15:00Z\",\n      \"started_at\": \"2026-08-10T09:15:02Z\",\n      \"ended_at\": \"2026-08-10T09:16:38Z\",\n      \"recording_available\": true,\n      \"transcript_available\": true,\n      \"analysis\": {\n        \"summary\": \"Rohit ne order AC-88213 ki delivery confirm kar di. Kal shaam 6 baje ka slot theek hai, thoda late ho to bhi chalega. Koi complaint nahi.\",\n        \"success\": true,\n        \"data\": {\n          \"slot_confirmed\": \"कल शाम 6 बजे\",\n          \"address\": null\n        }\n      }\n    }\n  ],\n  \"has_more\": false,\n  \"next_cursor\": null\n}"
             }
           ]
         },
@@ -1797,7 +1894,7 @@
                 "{{call_id}}"
               ]
             },
-            "description": "The call object.\n\n| Field | Notes |\n| --- | --- |\n| `status` | See the folder description. |\n| `ended_reason` | Why it ended — `customer-ended-call`, `assistant-ended-call`, `customer-did-not-answer`, `exceeded-max-duration`, `voicemail`, … `null` while running. Treat as an open vocabulary. |\n| `duration_secs` | Seconds of live audio. `null` until the call ends. |\n| `cost_inr` | Rupees charged. `null` means nothing was charged. |\n| `started_at` | Set when audio goes live, not when we dialled. `null` if never answered. |"
+            "description": "The call object.\n\n| Field | Notes |\n| --- | --- |\n| `status` | See the folder description. |\n| `ended_reason` | Why it ended — `customer-ended-call`, `assistant-ended-call`, `customer-did-not-answer`, `exceeded-max-duration`, `voicemail`, … `null` while running. Treat as an open vocabulary. |\n| `duration_secs` | Seconds of live audio. `null` until the call ends. |\n| `cost_inr` | Rupees charged. `null` means nothing was charged. |\n| `started_at` | Set when audio goes live, not when we dialled. `null` if never answered. |\n| `recording_available` | `true` once the call's audio is stored. Fetch it from **Get recording**. |\n| `transcript_available` | `true` once the call produced speech. Fetch it from **Get transcript**. |\n| `analysis` | `{summary, success, data}` — only for agents created with `analysis.enabled: true`. `null` otherwise, and `null` while the call is still running. |\n\nThe two `*_available` booleans exist so you do not have to fetch a transcript to find out whether there is one. Both are `false` until the call ends."
           },
           "response": [
             {
@@ -1827,7 +1924,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"call_01K7Q9B4M8N3P6R2S5T7V9W1YA\",\n  \"object\": \"call\",\n  \"agent_id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n  \"to\": \"+919876543210\",\n  \"status\": \"completed\",\n  \"tier\": \"t1\",\n  \"ended_reason\": \"customer-ended-call\",\n  \"duration_secs\": 96,\n  \"cost_inr\": 2,\n  \"created_at\": \"2026-08-10T09:15:00Z\",\n  \"started_at\": \"2026-08-10T09:15:02Z\",\n  \"ended_at\": \"2026-08-10T09:16:38Z\"\n}"
+              "body": "{\n  \"id\": \"call_01K7Q9B4M8N3P6R2S5T7V9W1YA\",\n  \"object\": \"call\",\n  \"agent_id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n  \"to\": \"+919876543210\",\n  \"status\": \"completed\",\n  \"tier\": \"t1\",\n  \"ended_reason\": \"customer-ended-call\",\n  \"duration_secs\": 96,\n  \"cost_inr\": 2,\n  \"created_at\": \"2026-08-10T09:15:00Z\",\n  \"started_at\": \"2026-08-10T09:15:02Z\",\n  \"ended_at\": \"2026-08-10T09:16:38Z\",\n  \"recording_available\": true,\n  \"transcript_available\": true,\n  \"analysis\": {\n    \"summary\": \"Rohit ne order AC-88213 ki delivery confirm kar di. Kal shaam 6 baje ka slot theek hai, thoda late ho to bhi chalega. Koi complaint nahi.\",\n    \"success\": true,\n    \"data\": {\n      \"slot_confirmed\": \"कल शाम 6 बजे\",\n      \"address\": null\n    }\n  }\n}"
             },
             {
               "name": "200 OK — no answer",
@@ -1856,7 +1953,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"call_01K7Q9B4M8N3P6R2S5T7V9W1YB\",\n  \"object\": \"call\",\n  \"agent_id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n  \"to\": \"+919876543211\",\n  \"status\": \"no_answer\",\n  \"tier\": \"t1\",\n  \"ended_reason\": \"customer-did-not-answer\",\n  \"duration_secs\": 0,\n  \"cost_inr\": null,\n  \"created_at\": \"2026-08-10T09:20:01Z\",\n  \"started_at\": null,\n  \"ended_at\": \"2026-08-10T09:22:09Z\"\n}"
+              "body": "{\n  \"id\": \"call_01K7Q9B4M8N3P6R2S5T7V9W1YB\",\n  \"object\": \"call\",\n  \"agent_id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n  \"to\": \"+919876543211\",\n  \"status\": \"no_answer\",\n  \"tier\": \"t1\",\n  \"ended_reason\": \"customer-did-not-answer\",\n  \"duration_secs\": 0,\n  \"cost_inr\": null,\n  \"created_at\": \"2026-08-10T09:20:01Z\",\n  \"started_at\": null,\n  \"ended_at\": \"2026-08-10T09:22:09Z\",\n  \"recording_available\": false,\n  \"transcript_available\": false,\n  \"analysis\": null\n}"
             },
             {
               "name": "404 Not found",
@@ -1886,6 +1983,202 @@
               ],
               "cookie": [],
               "body": "{\n  \"error\": {\n    \"code\": \"not_found\",\n    \"message\": \"No such call.\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get transcript",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v2/calls/{{call_id}}/transcript",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v2",
+                "calls",
+                "{{call_id}}",
+                "transcript"
+              ]
+            },
+            "description": "What was said, as turns, once the call has ended.\n\n| Field | Notes |\n| --- | --- |\n| `role` | `assistant` or `user`. Nothing else appears — internal notes and tool steps are not conversation. |\n| `text` | The turn as spoken. Hindi, Hinglish and English arrive as they were said; nothing is translated. |\n| `start_ms`, `end_ms` | Milliseconds from the start of the **recording**, so a turn lines up with the audio from **Get recording**. `end_ms` can be `null` on the last turn of a call that was cut off. |\n\n**404 while the call is still running**, and **404 for a call that produced no speech at all** (nobody answered, or the line was silent). Check `transcript_available` on the call first if you want to tell those apart from a mistyped id.\n\nTranscripts are kept for 90 days, the same as the call record itself."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/v2/calls/call_01K7Q9B4M8N3P6R2S5T7V9W1YA/transcript",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "v2",
+                    "calls",
+                    "call_01K7Q9B4M8N3P6R2S5T7V9W1YA",
+                    "transcript"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"call_id\": \"call_01K7Q9B4M8N3P6R2S5T7V9W1YA\",\n  \"turns\": [\n    {\n      \"role\": \"assistant\",\n      \"text\": \"नमस्ते Rohit जी, मैं Acme Retail से Priya बोल रही हूँ। एक मिनट बात कर सकती हूँ?\",\n      \"start_ms\": 420,\n      \"end_ms\": 4980\n    },\n    {\n      \"role\": \"user\",\n      \"text\": \"हाँ बोलिए\",\n      \"start_ms\": 5640,\n      \"end_ms\": 6390\n    },\n    {\n      \"role\": \"assistant\",\n      \"text\": \"आपका order AC-88213 kal shaam 6 baje deliver hoga, Flat 402 Sunrise Apartments Andheri West. Ye slot theek hai?\",\n      \"start_ms\": 7010,\n      \"end_ms\": 14880\n    },\n    {\n      \"role\": \"user\",\n      \"text\": \"haan theek hai, lekin thoda late aaye to chalega\",\n      \"start_ms\": 15900,\n      \"end_ms\": 19240\n    },\n    {\n      \"role\": \"assistant\",\n      \"text\": \"बिल्कुल, हम delivery partner ko note kar denge. Aur koi help chahiye?\",\n      \"start_ms\": 19960,\n      \"end_ms\": 24110\n    },\n    {\n      \"role\": \"user\",\n      \"text\": \"nahi bas itna hi, thank you\",\n      \"start_ms\": 25020,\n      \"end_ms\": 26980\n    },\n    {\n      \"role\": \"assistant\",\n      \"text\": \"धन्यवाद Rohit जी, आपका दिन शुभ हो।\",\n      \"start_ms\": 27600,\n      \"end_ms\": 30640\n    }\n  ]\n}"
+            },
+            {
+              "name": "404 Not available yet",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/v2/calls/call_01K7Q9B4M8N3P6R2S5T7V9W1YB/transcript",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "v2",
+                    "calls",
+                    "call_01K7Q9B4M8N3P6R2S5T7V9W1YB",
+                    "transcript"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"code\": \"not_found\",\n    \"message\": \"transcript not available (call still in progress or produced no speech)\"\n  }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const t = pm.response.json();",
+                  "console.log(t.turns.length, \"turns\");",
+                  "t.turns.forEach((x) => console.log(`${x.start_ms}ms ${x.role}: ${x.text}`));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get recording",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v2/calls/{{call_id}}/recording",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v2",
+                "calls",
+                "{{call_id}}",
+                "recording"
+              ]
+            },
+            "description": "**302** to a signed, time-limited URL for the call's audio (WAV). Follow the redirect — most HTTP clients do by default; `curl` needs `-L`.\n\nThe signed link is valid for **15 minutes**. It is a way to fetch this recording now, not a permanent URL: do not store it, store the `call_id` and ask again. Anyone holding the link can fetch the audio until it expires, so treat it as you would the recording itself.\n\n**404** while the call is running, for a call that produced no audio, and for a call whose audio was never stored. `recording_available` on the call object tells you which requests are worth making."
+          },
+          "response": [
+            {
+              "name": "302 Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/v2/calls/call_01K7Q9B4M8N3P6R2S5T7V9W1YA/recording",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "v2",
+                    "calls",
+                    "call_01K7Q9B4M8N3P6R2S5T7V9W1YA",
+                    "recording"
+                  ]
+                }
+              },
+              "status": "Found",
+              "code": 302,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Location",
+                  "value": "https://storage.miraiminds.co/voice-agents/production/call_records/call_01K7Q9B4M8N3P6R2S5T7V9W1YA/call.wav?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900&X-Amz-Signature=…"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "404 No recording",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/v2/calls/call_01K7Q9B4M8N3P6R2S5T7V9W1YB/recording",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "v2",
+                    "calls",
+                    "call_01K7Q9B4M8N3P6R2S5T7V9W1YB",
+                    "recording"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"code\": \"not_found\",\n    \"message\": \"recording not available (call still in progress, or it produced no audio)\"\n  }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"302 or 200 after following the redirect\", () =>",
+                  "  pm.expect([200, 302]).to.include(pm.response.code));",
+                  "const loc = pm.response.headers.get(\"Location\");",
+                  "if (loc) console.log(\"signed for 15 minutes:\", loc.split(\"?\")[0]);"
+                ]
+              }
             }
           ]
         },
@@ -3735,7 +4028,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"id\": \"evt_01K7QAE7Q3S6T9V5W8X1Y4Z6AC\",\n  \"type\": \"call.completed\",\n  \"created_at\": \"2026-08-10T09:16:38Z\",\n  \"data\": {\n    \"call\": {\n      \"id\": \"call_01K7Q9B4M8N3P6R2S5T7V9W1YA\",\n      \"object\": \"call\",\n      \"agent_id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n      \"to\": \"+919876543210\",\n      \"status\": \"completed\",\n      \"tier\": \"t1\",\n      \"ended_reason\": \"customer-ended-call\",\n      \"duration_secs\": 96,\n      \"cost_inr\": 2,\n      \"created_at\": \"2026-08-10T09:15:00Z\",\n      \"started_at\": \"2026-08-10T09:15:02Z\",\n      \"ended_at\": \"2026-08-10T09:16:38Z\"\n    }\n  }\n}",
+              "raw": "{\n  \"id\": \"evt_01K7QAE7Q3S6T9V5W8X1Y4Z6AC\",\n  \"type\": \"call.completed\",\n  \"created_at\": \"2026-08-10T09:16:38Z\",\n  \"data\": {\n    \"call\": {\n      \"id\": \"call_01K7Q9B4M8N3P6R2S5T7V9W1YA\",\n      \"object\": \"call\",\n      \"agent_id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n      \"to\": \"+919876543210\",\n      \"status\": \"completed\",\n      \"tier\": \"t1\",\n      \"ended_reason\": \"customer-ended-call\",\n      \"duration_secs\": 96,\n      \"cost_inr\": 2,\n      \"created_at\": \"2026-08-10T09:15:00Z\",\n      \"started_at\": \"2026-08-10T09:15:02Z\",\n      \"ended_at\": \"2026-08-10T09:16:38Z\",\n      \"recording_available\": true,\n      \"transcript_available\": true,\n      \"analysis\": {\n        \"summary\": \"Rohit ne order AC-88213 ki delivery confirm kar di. Kal shaam 6 baje ka slot theek hai, thoda late ho to bhi chalega. Koi complaint nahi.\",\n        \"success\": true,\n        \"data\": {\n          \"slot_confirmed\": \"कल शाम 6 बजे\",\n          \"address\": null\n        }\n      }\n    }\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3770,7 +4063,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"id\": \"evt_01K7QAE7Q3S6T9V5W8X1Y4Z6AC\",\n  \"type\": \"call.completed\",\n  \"created_at\": \"2026-08-10T09:16:38Z\",\n  \"data\": {\n    \"call\": {\n      \"id\": \"call_01K7Q9B4M8N3P6R2S5T7V9W1YA\",\n      \"object\": \"call\",\n      \"agent_id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n      \"to\": \"+919876543210\",\n      \"status\": \"completed\",\n      \"tier\": \"t1\",\n      \"ended_reason\": \"customer-ended-call\",\n      \"duration_secs\": 96,\n      \"cost_inr\": 2,\n      \"created_at\": \"2026-08-10T09:15:00Z\",\n      \"started_at\": \"2026-08-10T09:15:02Z\",\n      \"ended_at\": \"2026-08-10T09:16:38Z\"\n    }\n  }\n}",
+                  "raw": "{\n  \"id\": \"evt_01K7QAE7Q3S6T9V5W8X1Y4Z6AC\",\n  \"type\": \"call.completed\",\n  \"created_at\": \"2026-08-10T09:16:38Z\",\n  \"data\": {\n    \"call\": {\n      \"id\": \"call_01K7Q9B4M8N3P6R2S5T7V9W1YA\",\n      \"object\": \"call\",\n      \"agent_id\": \"agt_01K7Q9F3K7M2N5P9R4T6V8W0XZ\",\n      \"to\": \"+919876543210\",\n      \"status\": \"completed\",\n      \"tier\": \"t1\",\n      \"ended_reason\": \"customer-ended-call\",\n      \"duration_secs\": 96,\n      \"cost_inr\": 2,\n      \"created_at\": \"2026-08-10T09:15:00Z\",\n      \"started_at\": \"2026-08-10T09:15:02Z\",\n      \"ended_at\": \"2026-08-10T09:16:38Z\",\n      \"recording_available\": true,\n      \"transcript_available\": true,\n      \"analysis\": {\n        \"summary\": \"Rohit ne order AC-88213 ki delivery confirm kar di. Kal shaam 6 baje ka slot theek hai, thoda late ho to bhi chalega. Koi complaint nahi.\",\n        \"success\": true,\n        \"data\": {\n          \"slot_confirmed\": \"कल शाम 6 बजे\",\n          \"address\": null\n        }\n      }\n    }\n  }\n}",
                   "options": {
                     "raw": {
                       "language": "json"

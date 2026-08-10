@@ -5,7 +5,7 @@ agents, single calls, campaigns, the do-not-call list, the wallet, and webhooks.
 
 | File | What it is |
 | --- | --- |
-| `mirai-voice-sandbox.postman_collection.json` | The collection — 7 folders, 37 requests, 67 saved example responses. |
+| `mirai-voice-sandbox.postman_collection.json` | The collection — 7 folders, 40 requests, 73 saved example responses. |
 | `sandbox.postman_environment.json` | The environment — base URL, your key, your test number. |
 
 ## Import
@@ -16,12 +16,12 @@ agents, single calls, campaigns, the do-not-call list, the wallet, and webhooks.
    - **`api_key`** — your `sk_live_…` secret key. Marked *secret*, so it is never written back into the file you share.
    - **`test_phone`** — a number **you own**, E.164 with the country code: `+919876543210`. The quickstart rings it for real.
    - `webhook_endpoint` / `webhook_secret` — only if you want to test your webhook receiver (see the **Webhooks** folder).
-4. Open **0-Quickstart** and run the nine requests top to bottom.
+4. Open **0-Quickstart** and run the ten requests top to bottom.
 
 Each quickstart step saves the id the next one needs — `{{agent_id}}`,
 `{{call_id}}`, `{{campaign_id}}` — so there is nothing to copy and paste. You
-finish with an agent, one completed call, a wallet you can reconcile, and a
-five-contact campaign that has run and reported.
+finish with an agent, one completed call you can read back turn by turn, a
+wallet you can reconcile, and a five-contact campaign that has run and reported.
 
 ### Where your key comes from
 
@@ -58,6 +58,7 @@ Per secret key, unless your account contact has provisioned you differently:
 | `system_prompt` / `first_message` | 8,000 / 500 characters | `400 invalid_request` |
 | `voice.voice_id` | `ashu` (default) or `aishe` — the whole catalogue | `400 invalid_request` |
 | `variables` | 32 keys, 512 characters per value | `400 invalid_request` |
+| `analysis.prompt` | 2,000 characters | `400 invalid_request` |
 | `max_duration_secs` | 30–1800, default 300 | `400 invalid_request` |
 | `Idempotency-Key` | 255 characters, remembered 24 hours | — |
 
@@ -121,6 +122,12 @@ enable them. Everything else in this collection keeps working meanwhile.
   agent placeholders, filled by the platform from each call's `variables`.
   Postman leaves an undefined `{{…}}` untouched, so they arrive intact — just do
   not create a Postman variable with the same name.
+- **Recording links expire.** `GET /v2/calls/{id}/recording` redirects to a
+  signed URL good for 15 minutes. Store the `call_id` and ask again; do not
+  store the link, and treat it as you would the audio — anyone holding it can
+  fetch the recording until it expires.
+- **Transcripts and recordings live for 90 days**, the same as the call
+  record. Pull anything you need to keep longer into your own system.
 - **Foreign ids answer `404`, never `403`.** An id belonging to another
   workspace is indistinguishable from one that never existed. `403` means one
   thing only: your key was revoked.
