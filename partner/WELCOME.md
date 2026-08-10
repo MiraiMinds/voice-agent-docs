@@ -18,7 +18,7 @@ attach the two Postman files from this folder. Thirty seconds.
 
 ---
 
-**Subject:** Your Mirai Voice API access — start here
+**Subject:** Your Voice Infra API access — start here
 
 Hi {{NAME}},
 
@@ -71,7 +71,7 @@ Two files are attached:
   example responses.
 - `sandbox.postman_environment.json` — base URL, your key, your test number.
 
-Import both, select the **Mirai Voice — Sandbox** environment, fill in `api_key`
+Import both, select the **Voice Infra — Sandbox** environment, fill in `api_key`
 and `test_phone` (a number you own, E.164 — it will actually ring), then run the
 **0-Quickstart** folder top to bottom. Each step saves the id the next one
 needs, so there is nothing to copy and paste.

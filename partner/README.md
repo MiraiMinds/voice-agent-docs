@@ -1,4 +1,4 @@
-# Mirai Voice — Postman collection (public v2 API)
+# Voice Infra — Postman collection (public v2 API)
 
 Outbound AI voice calls for India. This collection covers the whole surface:
 agents, single calls, campaigns, the do-not-call list, the wallet, and webhooks.
@@ -11,7 +11,7 @@ agents, single calls, campaigns, the do-not-call list, the wallet, and webhooks.
 ## Import
 
 1. Postman → **Import** → drop in **both** JSON files.
-2. Top right, select the **Mirai Voice — Sandbox** environment.
+2. Top right, select the **Voice Infra — Sandbox** environment.
 3. Open the environment and fill in:
    - **`api_key`** — your `sk_live_…` secret key. Marked *secret*, so it is never written back into the file you share.
    - **`test_phone`** — a number **you own**, E.164 with the country code: `+919876543210`. The quickstart rings it for real.
