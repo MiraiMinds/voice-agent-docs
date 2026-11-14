@@ -852,7 +852,8 @@ components:
             `customer-did-not-answer`, `customer-busy`, `voicemail`,
             `silence-timed-out`, `idle-timed-out`, `no-media`, `no-trunk`,
             `aborted-by-api`, `duplicate-call`, `configuration-error`,
-            `assistant-error`, `transferred`, `balance-exhausted`.
+            `assistant-error`, `transferred`, `balance-exhausted`,
+            `queue-timeout`, `carrier-busy`.
           example: assistant-ended-call
         started_at:
           type: [string, "null"]

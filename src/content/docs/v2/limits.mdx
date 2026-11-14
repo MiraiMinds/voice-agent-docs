@@ -16,6 +16,8 @@ Limits are per **secret key**.
 | :--- | :--- | :--- | :--- |
 | Request rate | 10 requests/second, burst 20 | all `/v2/*` endpoints | `429 rate_limited` |
 | Concurrent live calls | 5 | calls in `dialing` or `in_progress` | the call **queues** |
+| Dial pace | a short burst, then about 1 call/second | phone calls on the Mirai shared line, per workspace | the call **queues** |
+| Queue time | 30 minutes | a phone call on the Mirai shared line waiting in `queued` | the call ends `failed` with `queue-timeout` |
 | Queue depth | 500 | calls accepted and not yet ended | `429 rate_limited` |
 
 :::caution[Pilot keys are provisioned individually]
@@ -53,6 +55,29 @@ That makes the ceiling a **pacer**, not a gate. Two consequences:
   submit it until you have the capacity.
 - Submitting a burst does not fail; it builds a queue that drains at your
   concurrency.
+
+### Dial pace and queue time
+
+You can send `POST /v2/calls` as fast as your request rate allows. You do not
+need to space the calls yourself. For phone calls on the Mirai shared line we
+do it for you:
+
+- Every call is accepted with `202` and `status: "queued"`, and keeps the same
+  call ID from that moment on.
+- Calls ring in the order you placed them: a short burst first, then about one
+  call a second for each workspace. Phone carriers refuse dials that arrive
+  faster than that, so a faster burst would only fail.
+- If the carrier has no free line when a call's turn comes, the call goes back
+  in the queue and is placed again a few seconds later. It does not fail.
+- A call waits at most **30 minutes**. After that it ends as `failed` with
+  `ended_reason: "queue-timeout"`. We never dial it late, nothing rings, and it
+  is not billed. If your calls are only useful for a shorter time, abort the
+  ones you no longer want.
+- [Aborting](/v2/calls/#abort-a-call) a call that is still waiting ends it right
+  away.
+
+A call from one of your own numbers is not paced this way. It dials through
+your own carrier connection as soon as it has a slot.
 
 ### Queue depth
 
