@@ -16,8 +16,8 @@ Limits are per **secret key**.
 | :--- | :--- | :--- | :--- |
 | Request rate | 10 requests/second, burst 20 | all `/v2/*` endpoints | `429 rate_limited` |
 | Concurrent live calls | 5 | calls in `dialing` or `in_progress` | the call **queues** |
-| Dial pace | a short burst, then about 1 call/second | phone calls on the Mirai shared line, per workspace | the call **queues** |
-| Queue time | 30 minutes | a phone call on the Mirai shared line waiting in `queued` | the call ends `failed` with `queue-timeout` |
+| Dial pace | a short burst, then about 1 call/second | phone calls on the Mirai shared line or from a number you rent from us, per workspace | the call **queues** |
+| Queue time | 30 minutes | one of those phone calls waiting in `queued` | the call ends `failed` with `queue-timeout` |
 | Queue depth | 500 | calls accepted and not yet ended | `429 rate_limited` |
 
 :::caution[Pilot keys are provisioned individually]
@@ -59,8 +59,8 @@ That makes the ceiling a **pacer**, not a gate. Two consequences:
 ### Dial pace and queue time
 
 You can send `POST /v2/calls` as fast as your request rate allows. You do not
-need to space the calls yourself. For phone calls on the Mirai shared line we
-do it for you:
+need to space the calls yourself. For phone calls on the Mirai shared line, and
+from a phone number you rent from us, we do it for you:
 
 - Every call is accepted with `202` and `status: "queued"`, and keeps the same
   call ID from that moment on.
@@ -76,8 +76,10 @@ do it for you:
 - [Aborting](/v2/calls/#abort-a-call) a call that is still waiting ends it right
   away.
 
-A call from one of your own numbers is not paced this way. It dials through
-your own carrier connection as soon as it has a slot.
+Calls on the shared line and from the numbers you rent from us share one pace
+per workspace. A call from a number on your own carrier account or your own SIP
+trunk is not paced this way. It dials through your connection as soon as it has
+a slot, and your carrier's limits apply.
 
 ### Queue depth
 
