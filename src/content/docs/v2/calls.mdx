@@ -47,7 +47,7 @@ Base URL `https://api.voice.miraiminds.co`.
 
 | Status | Terminal | Meaning |
 | :--- | :---: | :--- |
-| `queued` | | Accepted, waiting on fleet capacity. |
+| `queued` | | Accepted, waiting for its turn: the [dial pace](/v2/limits/#dial-pace-and-queue-time), a voice slot, or a free carrier line. |
 | `dialing` | | SIP invite sent, phone is ringing. |
 | `in_progress` | | Media live, conversation running. |
 | `completed` | ✅ | Connected and finished normally. **Billable.** |
@@ -58,12 +58,16 @@ Base URL `https://api.voice.miraiminds.co`.
 | `timeout` | ✅ | Hit `max_duration_secs`. **Billable.** |
 | `aborted` | ✅ | You cancelled it with [`POST /abort`](#abort-a-call) — from the queue, mid-ring, or mid-conversation. Free either way. |
 
-Statuses only move forward. A terminal status never changes.
+Statuses move forward, with one exception: a call the carrier had no free line
+for goes from `dialing` back to `queued` and is placed again. A terminal status
+never changes.
 
 ```mermaid
 stateDiagram-v2
     [*] --> queued: POST /v2/calls
-    queued --> dialing: capacity acquired
+    queued --> dialing: its turn, capacity acquired
+    dialing --> queued: carrier has no free line
+    queued --> failed: 30 minutes in the queue (queue-timeout)
     queued --> aborted: POST /abort
     dialing --> aborted: POST /abort
     in_progress --> aborted: POST /abort
@@ -101,6 +105,8 @@ for control flow; use `ended_reason` for analytics and support.
 | `silence-timed-out` | `completed` | Media was live but nobody ever spoke. Billable — the agent ran. |
 | `idle-timed-out` | `completed` | The agent re-prompted its configured number of times and the caller never came back. Billable. |
 | `no-media` | `failed` | The call was placed but audio never flowed. See the note below. Not billed. |
+| `queue-timeout` | `failed` | A phone call on the Mirai shared line waited in `queued` for 30 minutes and could not be placed. It was never dialled, nothing rang. Not billed. See [dial pace and queue time](/v2/limits/#dial-pace-and-queue-time). |
+| `carrier-busy` | `failed` | The phone carrier had no free line for a campaign call. Nothing rang. Not billed, and the campaign places the call again without using an attempt. A call you place with `POST /v2/calls` waits in the queue instead and does not end this way. |
 | `aborted-by-api` | `aborted` | You called [`POST /abort`](#abort-a-call). The only reason an abort produces. |
 | `assistant-error` | `failed` | Pipeline failure on our side. Not billed. |
 | `transferred` | `completed` | The call ended in a completed warm transfer to a human. Handoff is [part of every tier](/general/tiers/#feature-matrix); the rollout is completing — **no call emits this yet**, see the [roadmap](/general/roadmap/). |
