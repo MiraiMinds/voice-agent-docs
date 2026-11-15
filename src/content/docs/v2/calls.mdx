@@ -253,7 +253,8 @@ matching `{{key}}` placeholder in the agent's `system_prompt` and
   aloud. Validate on your side.
 - Keep values short. They are part of the prompt, and the prompt is on the
   latency path.
-- Variables are **static per call**. There is no way to change them mid-call.
+- Variables are **static per call**. To tell the agent something new while it
+  talks, send a [live instruction](#steer-a-live-call).
 
 ### Idempotency
 
@@ -371,6 +372,130 @@ billed — including one aborted after media went live.
 | :--- | :--- | :--- |
 | `404` | `not_found` | Unknown call ID, or a call in another workspace |
 | `409` | `conflict` | The call has already ended — its status is terminal, so there is nothing to abort |
+
+---
+
+## Steer a live call
+
+```http
+POST /v2/calls/{id}/control
+GET  /v2/calls/{id}/control/{control_id}
+```
+
+Your backend can step into a call while it is in progress: phone calls
+(outbound, campaign and inbound), browser calls and realtime sessions. Four
+kinds of control:
+
+| `type` | Body | What the caller gets |
+| :--- | :--- | :--- |
+| `instruction` | `text`, 1–1,000 characters | Nothing directly. The agent follows it from its next reply to the end of the call. It is never read aloud. |
+| `say` | `text`, 1–1,000 characters; `interrupt` (optional) | The agent says exactly that text, in its own voice. |
+| `play` | `audio_url`, or an uploaded file; `interrupt` (optional) | An audio clip, played on the line. |
+| `close` | `message`, up to 500 characters (optional) | A goodbye (yours, else the agent's own closing line), then the call ends as `completed` with `ended_reason: "api-ended-call"`. |
+
+`interrupt` decides what happens if the agent is talking:
+
+- `true` cuts the agent off and speaks or plays right away.
+- `false` (the default) waits for the agent to finish its sentence, up to 8
+  seconds.
+
+Say the owner approves a discount while the agent is still negotiating:
+
+```bash
+# Tell the agent, so its next reply uses it
+curl -X POST https://api.voice.miraiminds.co/v2/calls/call_01JZQ9B4M8N3P6R2S5T7V9W1YA/control \
+  -H "Authorization: Bearer sk_live_YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: order-8842-approval" \
+  -d '{"type": "instruction", "text": "The owner approves a final price of ₹4,500. Offer it."}'
+
+# Or have the agent say it right now
+curl -X POST https://api.voice.miraiminds.co/v2/calls/call_01JZQ9B4M8N3P6R2S5T7V9W1YA/control \
+  -H "Authorization: Bearer sk_live_YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"type": "say", "text": "Good news, the owner has approved ₹4,500 for you.", "interrupt": true}'
+```
+
+```json title="200 OK"
+{
+  "id": "ctl_01K2M5X8C2E4G6J8M0P2R4T6V8",
+  "object": "call_control",
+  "call_id": "call_01JZQ9B4M8N3P6R2S5T7V9W1YA",
+  "type": "say",
+  "status": "applied",
+  "created_at": "2026-11-15T10:03:10.120Z",
+  "applied_at": "2026-11-15T10:03:10.410Z"
+}
+```
+
+A `say` line becomes part of the conversation: it is in the transcript, and the
+agent knows it said it.
+
+### Play an audio clip
+
+Give a URL:
+
+```bash
+curl -X POST https://api.voice.miraiminds.co/v2/calls/call_01JZQ9B4M8N3P6R2S5T7V9W1YA/control \
+  -H "Authorization: Bearer sk_live_YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"type": "play", "audio_url": "https://cdn.example.com/clips/owner-approval.mp3"}'
+```
+
+Or upload the file itself as `multipart/form-data`, with the clip in a file
+part named `audio`:
+
+```bash
+curl -X POST https://api.voice.miraiminds.co/v2/calls/call_01JZQ9B4M8N3P6R2S5T7V9W1YA/control \
+  -H "Authorization: Bearer sk_live_YOUR_API_KEY" \
+  -F type=play -F interrupt=false -F audio=@owner-approval.wav
+```
+
+- WAV, MP3, OGG or FLAC, at most 2 MB and 60 seconds. We convert it to the
+  call's audio format, so an 8 kHz phone line and a browser both get it right.
+- `audio_url` must be `https` on a public host (no private or internal
+  addresses). We fetch it once, when you send the control, and we don't follow
+  redirects. If the fetch fails you get `400 audio_unavailable` with the
+  reason, and nothing plays.
+- The agent is told a clip was played, so it can respond naturally if the
+  caller reacts to it.
+
+### Responses
+
+The request waits up to 3 seconds for the call to confirm the control.
+
+| HTTP | `status` | Meaning |
+| :--- | :--- | :--- |
+| `200` | `applied` | The call took it. For `say` and `play`, the audio is queued and starts as described above. |
+| `200` | `rejected` | The call refused it; `reason` says why, e.g. `call_ending` (the call is already ending) or `already_closed` (a `close` was already applied). |
+| `200` | `failed` | It could not be applied. For a clip: `audio_unavailable`, `invalid_audio` (it doesn't decode) or `audio_too_long`. |
+| `202` | `pending` | Delivered but not confirmed yet. Read it back with `GET /v2/calls/{id}/control/{control_id}`. |
+
+Send an `Idempotency-Key`. A repeat with the same key returns the same control
+and is never delivered twice, so a retry can't make the agent say something
+twice. The same key with a different body is `409 conflict`.
+
+The [live event stream](#live-events) adds `control.applied`
+`{control_id, type}` when a control takes effect, and `control.completed`
+`{control_id, type, played}` when a `say` or `play` has finished on the line.
+
+Controls cost nothing extra. The call is billed per minute as usual.
+
+| Status | `error.code` | Cause |
+| :--- | :--- | :--- |
+| `400` | `invalid_request` | Unknown `type`, a field that doesn't belong to it, text too long, `audio_url` not `https` or on a private address, a clip over 2 MB or 60 seconds, or not audio |
+| `400` | `audio_unavailable` | `audio_url` could not be fetched (not found, too slow, redirected, refused) |
+| `400` | `unsupported_channel` | The call is a console text chat |
+| `404` | `not_found` | Unknown call ID, or a call in another workspace |
+| `409` | `call_not_active` | The call hasn't connected yet (a phone that is still ringing), or has ended |
+| `409` | `conflict` | `Idempotency-Key` reused with a different body |
+
+### Live events
+
+`GET /v2/calls/{id}/events` streams what happens on a call as Server-Sent
+Events, with your API key or the `events_url` token from the create response:
+`agent.state`, `transcript.turn`, `control.applied`, `control.completed` and,
+last, `call.ended`.
 
 ---
 

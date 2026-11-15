@@ -50,6 +50,9 @@ There is no second shape to special-case.
 | `not_found` | `404` | Unknown `agt_`/`call_` ID, a soft-deleted agent, or an ID that belongs to another workspace. | Check the ID. |
 | `duplicate_call` | `409` | A request with this `Idempotency-Key` is still being processed; when the original completes, the same key replays its stored response. | Not an error if you are retrying — no second call was placed. |
 | `conflict` | `409` | The operation is illegal in the current state, e.g. aborting a call that has already ended. A `queued`, `dialing` or `in_progress` call aborts fine. | Read the call's `status` first. |
+| `unsupported_channel` | `400` | A [live control](/v2/calls/#steer-a-live-call) sent to a console text chat. | Live control works on phone, browser and realtime calls. |
+| `audio_unavailable` | `400` | A live `play` control's `audio_url` could not be fetched: not found, too slow, redirected, too big, or on a private address. Nothing was played. | Read `message` for the reason; check the URL is public `https`. |
+| `call_not_active` | `409` | A live control sent before the call connected (a phone still ringing) or after it ended. | Send it once the call is `in_progress`. |
 | `rate_limited` | `429` | Request rate exceeded, **or** your queue is full (500 calls accepted and not yet ended). Being at your *concurrency* ceiling does **not** produce this: those calls queue. `error.message` says which limit you hit. | Honour `Retry-After` and back off. See [Limits](/v2/limits/). |
 | `tier_unavailable` | `501` | `tier` was `t3` or `t5`. Those are announced but not live. | Use `t1`. See [tiers](/general/tiers/). |
 | `internal` | `500` | Our bug. Already alarming on our side. | Retry with backoff; if it persists, send us the `call_id`. |
